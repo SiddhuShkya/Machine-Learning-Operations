@@ -36,6 +36,19 @@ def form():
     # Render empty form for GET request
     return render_template('form.html', submitted=False, info=None)
 
+@app.route("/submit", methods=['GET', 'POST'])
+def submit():
+    if request.method == 'POST':
+        # Capture form data
+        personal_info = {
+            'name': request.form.get('name', ''),
+            'age': request.form.get('age', ''),
+            'country': request.form.get('country', '')
+        }
+        # Render the form with submitted data
+        return f"Hello {personal_info['name']}. Your age is {personal_info['age']} and you are from {personal_info['country']}."
+    # Render empty form for GET request
+    return f"Hello {personal_info['name']}. Your age is {personal_info['age']} and you are from {personal_info['country']}."
 
 print("Creating Flask app instance...")
 if __name__ == "__main__":
