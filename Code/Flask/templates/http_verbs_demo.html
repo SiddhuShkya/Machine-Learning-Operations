@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Playground - Flask App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    p.subtitle {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+      animation: slideUp 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    .card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .card:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.4em;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      font-size: 0.6em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .badge-get {
+      background-color: #61affe;
+    }
+
+    .badge-post {
+      background-color: #49cc90;
+    }
+
+    .badge-put {
+      background-color: #fca130;
+    }
+
+    .badge-delete {
+      background-color: #f93e3e;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #666;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95em;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    .btn-get {
+      background: linear-gradient(135deg, #61affe 0%, #499bea 100%);
+    }
+
+    .btn-post {
+      background: linear-gradient(135deg, #49cc90 0%, #3ab881 100%);
+    }
+
+    .btn-put {
+      background: linear-gradient(135deg, #fca130 0%, #e89123 100%);
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #f93e3e 0%, #e32b2b 100%);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      filter: brightness(1.1);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .response-section {
+      background: #1e1e1e;
+      border-radius: 15px;
+      padding: 25px;
+      color: #d4d4d4;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      margin-top: 30px;
+      animation: fadeIn 0.5s ease-in 0.6s backwards;
+    }
+
+    .response-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+    }
+
+    .response-title {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    pre {
+      font-family: 'Consolas', 'Monaco', monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.9em;
+      line-height: 1.5;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .status-code {
+      font-size: 0.9em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #333;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ API Playground</h1>
+      <p class="subtitle">Test your REST API endpoints interactively</p>
+    </header>
+
+    <div class="grid">
+      <!-- GET All -->
+      <div class="card">
+        <h2>List Items <span class="badge badge-get">GET</span></h2>
+        <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">Retrieve all items from the database.</p>
+        <button id="btn-get-all" class="btn-get">Fetch All Items</button>
+      </div>
+
+      <!-- GET One -->
+      <div class="card">
+        <h2>Get Item <span class="badge badge-get">GET</span></h2>
+        <div class="form-group">
+          <label for="get-id">Item ID</label>
+          <input id="get-id" type="number" min="1" placeholder="e.g., 1">
+        </div>
+        <button id="btn-get-one" class="btn-get">Fetch Item</button>
+      </div>
+
+      <!-- POST -->
+      <div class="card">
+        <h2>Create Item <span class="badge badge-post">POST</span></h2>
+        <div class="form-group">
+          <label for="post-name">Name</label>
+          <input id="post-name" placeholder="Item name">
+        </div>
+        <div class="form-group">
+          <label for="post-desc">Description</label>
+          <input id="post-desc" placeholder="Item description">
+        </div>
+        <button id="btn-post" class="btn-post">Create Item</button>
+      </div>
+
+      <!-- PUT -->
+      <div class="card">
+        <h2>Update Item <span class="badge badge-put">PUT</span></h2>
+        <div class="form-group">
+          <label for="put-id">Item ID</label>
+          <input id="put-id" type="number" min="1" placeholder="e.g., 1">
+        </div>
+        <div class="form-group">
+          <label for="put-name">New Name</label>
+          <input id="put-name" placeholder="Updated name">
+        </div>
+        <div class="form-group">
+          <label for="put-desc">New Description</label>
+          <input id="put-desc" placeholder="Updated description">
+        </div>
+        <button id="btn-put" class="btn-put">Update Item</button>
+      </div>
+
+      <!-- DELETE -->
+      <div class="card">
+        <h2>Delete Item <span class="badge badge-delete">DEL</span></h2>
+        <div class="form-group">
+          <label for="del-id">Item ID</label>
+          <input id="del-id" type="number" min="1" placeholder="e.g., 1">
+        </div>
+        <button id="btn-del" class="btn-delete">Delete Item</button>
+      </div>
+    </div>
+
+    <div class="response-section">
+      <div class="response-header">
+        <span class="response-title">Response Output</span>
+        <span id="status-display" class="status-code">Ready</span>
+      </div>
+      <pre id="response">// Responses will appear here...</pre>
+    </div>
+  </div>
+
+  <script>
+    const resp = document.getElementById('response');
+    const statusDisplay = document.getElementById('status-display');
+
+    function updateResponse(data, status) {
+      resp.textContent = JSON.stringify(data, null, 2);
+      statusDisplay.textContent = `Status: ${status}`;
+
+      // Color code status
+      if (status >= 200 && status < 300) statusDisplay.style.color = '#49cc90';
+      else if (status >= 400) statusDisplay.style.color = '#f93e3e';
+      else statusDisplay.style.color = '#d4d4d4';
+
+      // Scroll to response
+      document.querySelector('.response-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function handleRequest(url, options = {}) {
+      try {
+        resp.textContent = 'Loading...';
+        statusDisplay.textContent = 'Sending...';
+
+        const r = await fetch(url, options);
+        const j = await r.json();
+        updateResponse(j, r.status);
+      } catch (error) {
+        updateResponse({ error: error.message }, 'Error');
+      }
+    }
+
+    document.getElementById('btn-get-all').addEventListener('click', () => {
+      handleRequest('/items');
+    });
+
+    document.getElementById('btn-get-one').addEventListener('click', () => {
+      const id = document.getElementById('get-id').value;
+      if (!id) return alert('Please enter an ID');
+      handleRequest('/items/' + id);
+    });
+
+    document.getElementById('btn-post').addEventListener('click', () => {
+      const name = document.getElementById('post-name').value;
+      const desc = document.getElementById('post-desc').value;
+      if (!name) return alert('Please enter a name');
+
+      handleRequest('/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, description: desc })
+      });
+    });
+
+    document.getElementById('btn-put').addEventListener('click', () => {
+      const id = document.getElementById('put-id').value;
+      const name = document.getElementById('put-name').value;
+      const desc = document.getElementById('put-desc').value;
+      if (!id) return alert('Please enter an ID');
+
+      handleRequest('/items/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, description: desc })
+      });
+    });
+
+    document.getElementById('btn-del').addEventListener('click', () => {
+      const id = document.getElementById('del-id').value;
+      if (!id) return alert('Please enter an ID');
+      handleRequest('/items/' + id, { method: 'DELETE' });
+    });
+  </script>
+</body>
+
+</html>
