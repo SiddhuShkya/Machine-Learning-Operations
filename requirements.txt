@@ -2,3 +2,5 @@ ipykernel
 numpy
 flask
 mlflow
+scikit-learn
+pandas
