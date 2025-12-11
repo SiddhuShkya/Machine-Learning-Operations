@@ -1,3 +1,5 @@
 venv
 Code/MLFlowStarter/mlartifacts
 Code/MLFlowStarter/mlruns
+Code/MLFlowStarter/DLMLFlow/mlruns
+Code/MLFlowStarter/DLMLFlow/mlartifacts
