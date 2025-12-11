@@ -4,3 +4,6 @@ flask
 mlflow
 scikit-learn
 pandas
+keras
+tensorflow
+hyperopt
