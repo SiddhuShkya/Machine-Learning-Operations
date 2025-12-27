@@ -462,4 +462,25 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 ---
 
+### 6. Prediction Using the Registered Model
+
+```python
+import mlflow.sklearn
+
+model_name = 'tracking-iris-lr' # The name you used for model registry 'registered_model_name'
+model_version = 'latest' # The best version of your registered model
+
+model_uri = f'models:/{model_name}/{model_version}'
+model = mlflow.sklearn.load_model(model_uri)
+
+y_pred = model.predict(X_test)
+print(y_pred)
+```
+Output : 
+```python
+[1 0 2 1 1 0 1 2 1 1 2 0 0 0 0 1 2 1 1 2 0 2 0 2 2 2 2 2 0 0]
+```
+
+---
+
 # <div align="center">Thank You for Going Through This Guide! 🙏✨</div>
