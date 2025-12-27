@@ -264,8 +264,154 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ sudo astro dev stop
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev restart
 ```
+---
+
+### Apache Airflow With TaskFlow API
+
+Apache Airflow introduced the TaskFlow API which allows you to create tasks using Python decorators like @task. This is a cleaner and more intuitive way of writing tasks without needing to manually use operators like PythonOperator. Airflow with taskflow api example : 
+
+1. Create a new dag file (taskflowapi.py) inside the dags folder of your astro project directory
+
+```text
+.
+├── 📄 airflow_settings.yaml       
+├── 📁 .astro/                      
+│   ├── 📄 config.yaml              
+│   ├── 📄 dag_integrity_exceptions.txt  
+│   └── 📄 test_dag_integrity_default.py 
+├── 📁 dags/                        
+│   ├── 📄 .airflowignore           
+│   └── 📄 exampledag.py    
+|   └── 📄 mlpipeline.py    
+|   └── 📄 taskflowapi.py            # Your newly created dag  
+├── 📄 Dockerfile                   
+├── 📄 .dockerignore                
+├── 📄 .env                         
+├── 📄 .gitignore                   
+├── 📁 include/                     
+├── 📄 packages.txt                 
+├── 📁 plugins/                     
+├── 📄 README.md                    
+├── 📄 requirements.txt             
+└── 📁 tests/                       
+    └── 📁 dags/                    
+        └── 📄 test_dag_example.py  
+```
+
+2. Copy and paste the below code to your newly created dag file (taskflowapi.py)
+
+```python
+from airflow import DAG
+from airflow.decorators import task
+from datetime import datetime
+
+# Define the DAG
+
+with DAG(
+    "taskflow_api_dag",
+    start_date=datetime(2025, 1, 1),
+    schedule="@daily",
+    catchup=False,
+) as dag:
+    # Define task 1 : Start wth an initial number
+    @task
+    def start_number():
+        initial_value = 15
+        print(f"Starting number: {initial_value}")
+        return initial_value
+
+    # Define task 2 : Increment the number
+    @task
+    def add_ten(number: int):
+        incremented_value = number + 10
+        print(f"Add 10 : {number} + 10 = {incremented_value}")
+        return incremented_value
+
+    # Define task 3 : Multiply the number
+    @task
+    def multiply_by_two(number: int):
+        multiplied_value = number * 2
+        print(f"Multiply by 2 : {number} * 2 = {multiplied_value}")
+        return multiplied_value
+
+    # Define task 4 : Subtract five from the number
+    @task
+    def subtract_five(number: int):
+        subtracted_value = number - 5
+        print(f"Subtract 5 : {number} - 5 = {subtracted_value}")
+        return subtracted_value
+
+    # Define task 5 : Square the number
+    @task
+    def square_number(number: int):
+        squared_value = number * number
+        print(f"Square : {number} ^ 2 = {squared_value}")
+        return squared_value
+
+    # Set the task dependencies
+    initial_number = start_number()
+    incremented_number = add_ten(initial_number)
+    multiplied_number = multiply_by_two(incremented_number)
+    subtracted_number = subtract_five(multiplied_number)
+    squared_number = square_number(subtracted_number)
+
+```
+
+3. Run the project
+
+```bash
+siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
+```
+
+4. Open the Airflow UI
+
+```bash
+http://localhost:8080/
+```
+
+5. In the dags tab, you will be able to see your newly created dag (taskflow_api_dag)
+
+<img src="../images/taskflow-api-dag.png"
+     alt="Taskflow-API-DAG"
+     style="border:1px solid white; padding:1px; background:#fff;" />
 
 
+6. Go inside your newly created dag (taskflow_api_dag) and run/trigger it. If you see all tasks green after execution it means that all the tasks has been executed successfully.
 
+<img src="../images/taskflow-api-dag-status.png"
+     alt="Taskflow-API-DAG-status"
+     style="border:1px solid white; padding:1px; background:#fff;" />
 
+7. You can now view the logs and Xcom of all your tasks. Examples :
 
+  - Task 1 : start_number
+  <table>
+  <tr>
+    <td>
+      <img src="../images/task1-logs.png" 
+           alt="Astro Container in Docker Desktop" 
+           style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
+    </td>
+    <td>
+      <img src="../images/task1-xcom.png" 
+           alt="Astro Container in Docker Desktop" 
+           style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
+    </td>
+    </tr>
+  </table>
+
+  - Task 4 : subtract_five
+  <table>
+  <tr>
+    <td>
+      <img src="../images/task4-logs.png" 
+           alt="Astro Container in Docker Desktop" 
+           style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
+    </td>
+    <td>
+      <img src="../images/task4-xcom.png" 
+           alt="Astro Container in Docker Desktop" 
+           style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
+    </td>
+    </tr>
+  </table>
