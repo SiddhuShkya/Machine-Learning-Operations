@@ -1,0 +1,20 @@
+artifact_path: /home/siddhu/Desktop/mlflow-starter/DL-Project-With-MLflow/mlruns/1/models/m-2d31b105f1874980afc2acc1006b7ea5/artifacts
+flavors:
+  keras:
+    data: data
+    keras_backend: tensorflow
+    keras_version: 3.12.0
+    save_exported_model: false
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.keras
+    python_version: 3.10.0
+mlflow_version: 3.8.1
+model_id: m-2d31b105f1874980afc2acc1006b7ea5
+model_size_bytes: 49142
+model_uuid: m-2d31b105f1874980afc2acc1006b7ea5
+prompts: null
+run_id: 5c2db62d20a643d295006299b4ccafc7
+utc_time_created: '2025-12-28 07:59:07.253237'
