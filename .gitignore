@@ -1,9 +1,6 @@
 venv
-Code/MLFlowStarter/mlartifacts
-Code/MLFlowStarter/mlruns
-Code/MLFlowStarter/DLMLFlow/mlruns
-Code/MLFlowStarter/DLMLFlow/mlartifacts
-
+Code/data-version-control/venv/
+Code/mlflow-starter/venv/
 
 # MLflow artifacts
 mlartifacts/
