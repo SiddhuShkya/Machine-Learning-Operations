@@ -8,6 +8,4 @@ Code/MLFlowStarter/DLMLFlow/mlartifacts
 # MLflow artifacts
 mlartifacts/
 **/mlartifacts/
-
-# Large model files
 *.pkl
