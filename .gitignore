@@ -1,8 +1,4 @@
 venv
-Code/data-version-control/venv/
-Code/mlflow-starter/venv/
-
-# MLflow artifacts
-mlartifacts/
-**/mlartifacts/
-*.pkl
+codes/data-version-control/
+codes/mlflow-starter/
+codes/airflow-with-astronomer/
