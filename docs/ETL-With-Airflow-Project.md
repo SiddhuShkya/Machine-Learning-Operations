@@ -420,5 +420,5 @@ siddhu@ubuntu:~/Desktop/ETL-Starter-Project$ astro dev stop
 
 ---
 
-### 3. ETL Pipline Deployment In Astro CLoud & AWS
+# <div align="center">Thank You for Going Through This Guide! 🙏✨</div>
 
