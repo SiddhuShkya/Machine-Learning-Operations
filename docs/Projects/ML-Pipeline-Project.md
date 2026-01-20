@@ -8,7 +8,7 @@ In this guide we will be implementing our first end to end machine learning pipe
 
 1.1 Let's create a new blank repository using dagshub for our project
 
-<img src="../images/mlpipeline-repository-creation.png" 
+<img src="../../images/mlpipeline-repository-creation.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -254,7 +254,7 @@ MLFLOW_TRACKING_PASSWORD=
 
 > Tracking uri : 
 
-<img src="../images/env-tracking-uri.png" 
+<img src="../../images/env-tracking-uri.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width: 1500px;" />
 
@@ -262,7 +262,7 @@ MLFLOW_TRACKING_PASSWORD=
 
 > Tracking password : secret_access_key under "Setup Credentials"
 
-<img src="../images/env-tracking-password.png" 
+<img src="../../images/env-tracking-password.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width: 1500px" />
 
@@ -392,7 +392,7 @@ if __name__ == "__main__":
 
 > After successfully execution of the above code we can see our experiments from our dagshub repository and see our experiments as well as logged params, metrics and model artifacts.
 
-<img src="../images/dagshub-experiments.png" 
+<img src="../../images/dagshub-experiments.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -655,7 +655,7 @@ stages:
 
 > To check if the pipeline has run successfully, go to your experiments tab from your dagshub repository and relaod the page. You should see two new experiments that were created recently
 
-<img src="../images/ml-pipeline-output.png" 
+<img src="../../images/ml-pipeline-output.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -664,7 +664,7 @@ stages:
 
 > Lets setup our dagshub dvc remote and also setup credentials. Copy paste it from the dagshub repo page
 
-<img src="../images/dagshub-dvc-remote.png"
+<img src="../../images/dagshub-dvc-remote.png"
         alt="Image Caption"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -708,13 +708,13 @@ Pushing
 
 > You should be able to see all your commited files in your dagshub repo
 
-<img src="../images/mlpipeline-final-push.png"
+<img src="../../images/mlpipeline-final-push.png"
         alt="Image Caption"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
 > Additionally you should also be able to see your data pipeline you created throughout this project in the form of a beautiful graph in the same dagshub repo
 
-<img src="../images/data-pipeline.png"
+<img src="../../images/data-pipeline.png"
         alt="Image Caption"
         style="border:1px solid white; padding:1px; background:#fff;" />
 

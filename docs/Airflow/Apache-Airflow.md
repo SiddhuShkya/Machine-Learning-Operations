@@ -47,7 +47,7 @@ Initialized empty Astro project in /home/siddhu/Desktop/airflow-astro
 siddhu@ubuntu:~/Desktop/airflow-astro$ code .
 ```
 
-<img src="../images/astro-project-template.png"
+<img src="../../images/astro-project-template.png"
      alt="Astro project template"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -87,7 +87,7 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
 
 > The above command will start building the Dockefile and after building it will run the airflow. You can see this if you have docker desktop in your machine.
 
-<img src="../images/airflow-docker-desktop.png"
+<img src="../../images/airflow-docker-desktop.png"
      alt="Astro Conatienr in Docker Desktop"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -99,7 +99,7 @@ http://localhost:8080/
 
 > Once the airflow has been started you can now access the airflow ui from the above link which is completely managed by the astro. This ui is entirely running in the docker container.
 
-<img src="../images/astro-airflow-ui.png"
+<img src="../../images/astro-airflow-ui.png"
      alt="Astro Conatienr in Docker Desktop"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -230,7 +230,7 @@ http://localhost:8080/
 
 5. In the dags, you will be able to see that you have 2 dags including the one you just created (ml_pipleline)
 
-<img src="../images/airflow-ui-dags.png"
+<img src="../../images/airflow-ui-dags.png"
      alt="Astro Conatienr in Docker Desktop"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -239,12 +239,12 @@ http://localhost:8080/
 <table>
   <tr>
     <td>
-      <img src="../images/triggered-dag.png" 
+      <img src="../../images/triggered-dag.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/triggered-dag-logs.png" 
+      <img src="../../images/triggered-dag-logs.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
@@ -371,14 +371,14 @@ http://localhost:8080/
 
 5. In the dags tab, you will be able to see your newly created dag (taskflow_api_dag)
 
-<img src="../images/taskflow-api-dag.png"
+<img src="../../images/taskflow-api-dag.png"
      alt="Taskflow-API-DAG"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 
 6. Go inside your newly created dag (taskflow_api_dag) and run/trigger it. If you see all tasks green after execution it means that all the tasks has been executed successfully.
 
-<img src="../images/taskflow-api-dag-status.png"
+<img src="../../images/taskflow-api-dag-status.png"
      alt="Taskflow-API-DAG-status"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -388,12 +388,12 @@ http://localhost:8080/
   <table>
   <tr>
     <td>
-      <img src="../images/task1-logs.png" 
+      <img src="../../images/task1-logs.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/task1-xcom.png" 
+      <img src="../../images/task1-xcom.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
@@ -404,12 +404,12 @@ http://localhost:8080/
   <table>
   <tr>
     <td>
-      <img src="../images/task4-logs.png" 
+      <img src="../../images/task4-logs.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/task4-xcom.png" 
+      <img src="../../images/task4-xcom.png" 
            alt="Astro Container in Docker Desktop" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>

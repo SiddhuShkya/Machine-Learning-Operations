@@ -45,7 +45,7 @@ siddhu@ubuntu:~/Desktop/mlflow-starter$ conda activate /home/siddhu/Desktop/mlfl
 
 1.5 Your mlflow environment setup is complete
 
-<img src="../images/mlflow-environment.png"
+<img src="../../images/mlflow-environment.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -69,7 +69,7 @@ Whenever we create our end-to-end data science project it is very important that
 
 > Note : The server will run on our localhost in 5000 port. This server is resposible for keeping track of all the experiments
 
-<img src="../images/mlflow-server.png"
+<img src="../../images/mlflow-server.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -81,7 +81,7 @@ Whenever we create our end-to-end data science project it is very important that
 - Metrics: The numbers you tracked over time (e.g., accuracy or loss per epoch).
 - Tags and Notes: Any custom labels or descriptions you added to your runs.
 
-<img src="../images/mlflow-db.png"
+<img src="../../images/mlflow-db.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -131,13 +131,13 @@ with mlflow.start_run():  # Start a new MLflow run (context manager ensures it e
 🧪 View experiment at: http://localhost:5000/#/experiments/1
 ```
 
-<img src="../images/mlflow-experiment.png"
+<img src="../../images/mlflow-experiment.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > Click on the shown experiment (my_experiment) and you will be able to view your logged params and metrics.
 
-<img src="../images/mlflow-logged-params-metrics.png"
+<img src="../../images/mlflow-logged-params-metrics.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -146,12 +146,12 @@ with mlflow.start_run():  # Start a new MLflow run (context manager ensures it e
 <table>
   <tr>
     <td>
-      <img src="../images/sqlite-experiments.png" 
+      <img src="../../images/sqlite-experiments.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/sqlite-metrics.png" 
+      <img src="../../images/sqlite-metrics.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
@@ -264,12 +264,12 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 <table>
   <tr>
     <td>
-      <img src="../images/lr-model-logs.png" 
+      <img src="../../images/lr-model-logs.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/lr-model-artifacts.png" 
+      <img src="../../images/lr-model-artifacts.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
@@ -314,13 +314,13 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 3.5 After running the above new block of codes, you should be able to see the new run in the same experiment (Iris Classification Experiment)
 
-<img src="../images/lr-experiment-runs.png"
+<img src="../../images/lr-experiment-runs.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 3.6 Finally you can also compare all the runs within the same experiment to decide which model is better
 
-<img src="../images/lr-runs-compare.png"
+<img src="../../images/lr-runs-compare.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -337,7 +337,7 @@ Artifacts are the files or folder that were produced and stored during an ML run
 
 4.1 Copy the relative path from one of the previous runs 
 
-<img src="../images/artifact-path.png"
+<img src="../../images/artifact-path.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -386,7 +386,7 @@ The MLflow Model Registry component is a centralized model store, set of APIs, a
 
 > In the models tab, you can see that both the previous models have already been registered.
 
-<img src="../images/registered-models.png"
+<img src="../../images/registered-models.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -415,7 +415,7 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 2. Run the code and view your run from the mlflow ui then compare the results with the previous 2 runs
 
-<img src="../images/lr-registry-compare.png"
+<img src="../../images/lr-registry-compare.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -423,7 +423,7 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 3. In the runs tab inside your experiment, click the link of your best model under the Models column.
 
-<img src="../images/register-model-option.png"
+<img src="../../images/register-model-option.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -431,7 +431,7 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 4. Check if the model has been registered or not from the models tab.
 
-<img src="../images/lr-registered-models.png"
+<img src="../../images/lr-registered-models.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -442,12 +442,12 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 <table>
   <tr>
     <td>
-      <img src="../images/add-tags.png" 
+      <img src="../../images/add-tags.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/add-alias.png" 
+      <img src="../../images/add-alias.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
@@ -456,7 +456,7 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
 6. Your best model has been registered as well as tagged and has also been given a proper alias
 
-<img src="../images/tags-and-alias.png"
+<img src="../../images/tags-and-alias.png"
      alt="Image Caption Here"
      style="border:1px solid white; padding:1px; background:#fff;" />
 

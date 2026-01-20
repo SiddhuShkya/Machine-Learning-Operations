@@ -12,7 +12,7 @@ Let's consider that this particular web app wants to use external services like 
 Docker compose is a tool for defining and running multi-container docker applications.
 ```
 
-<img src="../images/docker-compose.png"
+<img src="../../images/docker-compose.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 1500px" />
 
@@ -149,7 +149,7 @@ services:
 ```bash
 http://127.0.0.1:5000
 ```
-<img src="../images/flask-web-app.png"
+<img src="../../images/flask-web-app.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
     
@@ -183,7 +183,7 @@ Containers are temporary.
 When a container stops or is deleted, its filesystem is lost. Volumes solve this by storing data outside the container so it survives restarts.
 ```
 
-<img src="../images/docker-volume.png"
+<img src="../../images/docker-volume.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 2000px" />
 
@@ -286,7 +286,7 @@ docker compose up
 http://127.0.0.1:5000/
 ```
 
-<img src="../images/initial-web-app.png"
+<img src="../../images/initial-web-app.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -326,7 +326,7 @@ def hello():
 
 > Reload your web app, the change appears immediately without rebuilding the image.
 
-<img src="../images/reloaded-web-app.png"
+<img src="../../images/reloaded-web-app.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 

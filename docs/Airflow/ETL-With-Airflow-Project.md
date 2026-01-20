@@ -274,7 +274,7 @@ siddhu@ubuntu:~/Desktop/ETL-Starter-Project$ astro dev start
 
 > If you see dag errors like this :
 
-<img src="../images/dag-import-error.png"
+<img src="../../images/dag-import-error.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -291,7 +291,7 @@ apache-airflow-providers-postgres
 siddhu@ubuntu:~/Desktop/ETL-Starter-Project$ astro dev restart
 ```
 
-<img src="../images/nasa-donki-dag.png"
+<img src="../../images/nasa-donki-dag.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 3500px" />
 
@@ -306,14 +306,14 @@ siddhu@ubuntu:~/Desktop/ETL-Starter-Project$ astro dev restart
 
 > In your airflow ui, go to settings and you should be able to see the option for connections
 
-<img src="../images/airflow-connections.png"
+<img src="../../images/airflow-connections.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 
 > Create and save connection for the NASA APOD API 
 
-<img src="../images/nasa-apod-api.png"
+<img src="../../images/nasa-apod-api.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
     
@@ -322,7 +322,7 @@ siddhu@ubuntu:~/Desktop/ETL-Starter-Project$ astro dev restart
 
 For the host field, go to your docker desktop's container and from the running airflow container, click on the postgres container you should be able to see the host for the postgres
 
-<img src="../images/postgres-host.png"
+<img src="../../images/postgres-host.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -341,7 +341,7 @@ As for your other fields :
 
 > The same values we defined in our docker-compose.yaml
 
-<img src="../images/postgres-connection.png"
+<img src="../../images/postgres-connection.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -351,7 +351,7 @@ As for your other fields :
 
 > If you see all your tasks in green similar to he below one, then your dag has ran successfully without any issues.
 
-<img src="../images/donki-dag-triggered.png"
+<img src="../../images/donki-dag-triggered.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -366,13 +366,13 @@ As for your other fields :
 
 > After installing DBeaver you should be able to see the DBeaver-ce icon from the apps menu
 
-<img src="../images/DBeaver-app-menu.png"
+<img src="../../images/DBeaver-app-menu.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > Open the dbeaver-ce application, and from there go to the database tab and click on 'New Database Connection' and from there such and click PostgreSQL.
 
-<img src="../images/dbeaver-postgresql.png"
+<img src="../../images/dbeaver-postgresql.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -388,13 +388,13 @@ In our case:
 
 > Important, the configuration might change based on the set-up we had in our docker-compose.yml file
 
-<img src="../images/dbeaver-postgres-conn.png"
+<img src="../../images/dbeaver-postgres-conn.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > After successfully connecting to your postgres table, you should be able to see your tables (solar_flare_data) from the dbeaver ui
 
-<img src="../images/postgres-table.png"
+<img src="../../images/postgres-table.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -407,7 +407,7 @@ SELECT * FROM solar_flare_data;
 ```
 > Select the query and press 'Ctrl + Enter' to run the script.
 
-<img src="../images/solar-flare-table-records.png"
+<img src="../../images/solar-flare-table-records.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 

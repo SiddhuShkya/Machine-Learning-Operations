@@ -43,7 +43,7 @@ In this guide we are goig to :
 ```bash
 http://127.0.0.1:5000/
 ```
-<img src="../images/new-mlflow-server.png" 
+<img src="../../images/new-mlflow-server.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -220,12 +220,12 @@ Best Model MSE: 0.26071297621373707
 <table>
   <tr>
     <td>
-      <img src="../images/house-prediction-experiment.png" 
+      <img src="../../images/house-prediction-experiment.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
-      <img src="../images/house-price-logs.png" 
+      <img src="../../images/house-price-logs.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>

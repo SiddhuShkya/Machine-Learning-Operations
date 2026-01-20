@@ -65,7 +65,7 @@ docker --version
 
 2.1 Go to your docker hub website and in the website go to the explore tab
 
-<img src="../images/dockerhub-explore.png"
+<img src="../../images/dockerhub-explore.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -95,7 +95,7 @@ docker/getting-started:latest       3e4394f6b72f      47MB      0B
 
 You can also see this from Docker Desktop
 
-<img src="../images/docker-desktop-images.png"
+<img src="../../images/docker-desktop-images.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -114,7 +114,7 @@ Understanding the command :
 
 - `8080:80` : the host port is assigned the port 8080 and is mapped to the container port which is 80.
 
-<img src="../images/docker-ports.png"
+<img src="../../images/docker-ports.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 1500px" />
 
@@ -140,7 +140,7 @@ You can access the conatiner using the host port that is
 ```text
 http://localhost:8080/tutorial/
 ```
-<img src="../images/docker-first-container.png"
+<img src="../../images/docker-first-container.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 1500px" />
 
@@ -270,7 +270,7 @@ siddhu@ubuntu:~/Desktop/docker-demo$ source ./venv/bin/activate
 http://127.0.0.1:5000/
 ```
 
-<img src="../images/docker-hello-world.png"
+<img src="../../images/docker-hello-world.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -340,7 +340,7 @@ http://127.0.0.1:5000/
 
 > You will also be able to see that your container is running from the docker desktop
 
-<img src="../images/docker-dektop-hello-world.png"
+<img src="../../images/docker-dektop-hello-world.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -430,7 +430,7 @@ docker push shkyasid/docker-hello-world:latest
 
 4.5 Go to your docker hub account and check if your image has been successfully pushed or not
 
-<img src="../images/dockerhub-repo.png"
+<img src="../../images/dockerhub-repo.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 

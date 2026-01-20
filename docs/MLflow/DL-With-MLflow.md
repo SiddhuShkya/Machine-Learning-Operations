@@ -229,13 +229,13 @@ Best validation RMSE: 0.6656411290168762
 
 - Your experiment 
 
-<img src="../images/dl-experiments.png" 
+<img src="../../images/dl-experiments.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
 - Your runs
 
-<img src="../images/dl-runs.png" 
+<img src="../../images/dl-runs.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -243,13 +243,13 @@ Best validation RMSE: 0.6656411290168762
 
 10. Compare all the runs and identify the best model 
 
-<img src="../images/dl-runs-comparison.png" 
+<img src="../../images/dl-runs-comparison.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
 > In this case the best run is the one with the run name 'DL-Hyperopt-Optimization'
 
-<img src="../images/dl-best-model.png" 
+<img src="../../images/dl-best-model.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -259,7 +259,7 @@ Best validation RMSE: 0.6656411290168762
     - Create new model : final-model (your wish)
     - Register it
 
-<img src="../images/dl-registered-model.png" 
+<img src="../../images/dl-registered-model.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff;" />
 

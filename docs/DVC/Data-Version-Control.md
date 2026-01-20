@@ -37,7 +37,7 @@ siddhu@ubuntu:~/Desktop/data-version-control$ conda activate /home/siddhu/Deskto
 (/home/siddhu/Desktop/data-version-control/venv) siddhu@ubuntu:~/Desktop/data-version-control$ 
 ```
 
-<img src="../images/dvc-venv.png"
+<img src="../../images/dvc-venv.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -82,7 +82,7 @@ dvc
 
 > Before initializing dvc, lets first create a data folder and inside it create a data file to track it using dvc
 
-<img src="../images/data-file-dvc.png"
+<img src="../../images/data-file-dvc.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -265,13 +265,13 @@ Untracked files:
   <tr>
     <td>
     First Version Data
-      <img src="../images/dvc-first-version-data.png" 
+      <img src="../../images/dvc-first-version-data.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>
     <td>
     Second Version Data
-      <img src="../images/dvc-second-version-data.png" 
+      <img src="../../images/dvc-second-version-data.png" 
            alt="Image Caption" 
            style="border:1px solid white; padding:1px; background:#fff; width:800px;" />
     </td>

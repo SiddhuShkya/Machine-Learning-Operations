@@ -15,7 +15,7 @@ siddhu@ubuntu:~/Desktop$ cd GitHub-Action-Workflow/
 
 2. Open you VS-Code from inside your cloned repo and make your first commit by creating a README.md file
 
-<img src="../images/githubaction-readme.png"
+<img src="../../images/githubaction-readme.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -28,7 +28,7 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-Workflow$ git push origin main
 
 > Additinally, verify if the push has been made to your github repository
 
-<img src="../images/githubaction-firstcommit.png"
+<img src="../../images/githubaction-firstcommit.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -98,7 +98,7 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-Workflow$ git push origin main
 ```
 > Verify the push
 
-<img src="../images/githubaction-unitest-updated.png"
+<img src="../../images/githubaction-unitest-updated.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -106,13 +106,13 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-Workflow$ git push origin main
 
 > In your GitHub repository page, go to the 'Actions' tab
 
-<img src="../images/github-actions-tab.png"
+<img src="../../images/github-actions-tab.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > In the actions tab, you can see all the available pre-built github actions that are already available. Lets Configure with 'Python application' by clicking on Configure
 
-<img src="../images/githubaction-python-application.png"
+<img src="../../images/githubaction-python-application.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -208,19 +208,19 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-Workflow$ git push origin main
 ```
 > Since, what we did just now is one of our defined events (push event), it should run/trigger our github action workflow
 
-<img src="../images/workflow-triggered.png"
+<img src="../../images/workflow-triggered.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > You can also view your recently created workflow from the 'Actions' tab
 
-<img src="../images/githubaction-workflows.png"
+<img src="../../images/githubaction-workflows.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 > To manually execute or trigger the workflow, you bascially have to click on the created workflow then click re-run all jobs and wait for the steps to complete.
 
-<img src="../images/triggered-workflow.png"
+<img src="../../images/triggered-workflow.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff;" />
 

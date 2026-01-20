@@ -14,13 +14,13 @@ DagsHub is an AI platform that helps developers and teams manage the entire life
 
 - DagsHub Dashboard : [DagsHub Dashboard](https://dagshub.com/dashboard)
 
-<img src="../images/dagshub-dashboard.png"
+<img src="../../images/dagshub-dashboard.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 3. Now lets create a new dagshub repository by clicking the create button at the top right of the dagshub dashboard page
 
-<img src="../images/dagshub-repo-options.png"
+<img src="../../images/dagshub-repo-options.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -34,7 +34,7 @@ DagsHub is an AI platform that helps developers and teams manage the entire life
 
 4. Create your new blank repository
 
-<img src="../images/create-blank-repo.png"
+<img src="../../images/create-blank-repo.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -42,7 +42,7 @@ The repo name, visibilty and description is upto you.
 
 > Click 'Create Repository'
 
-<img src="../images/demo-dagshub.png"
+<img src="../../images/demo-dagshub.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -91,7 +91,7 @@ branch 'main' set up to track 'origin/main'.
 
 > You can also see your commited file from the dagshub repo page
 
-<img src="../images/first-commit.png"
+<img src="../../images/first-commit.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -110,7 +110,7 @@ README.md  venv
 siddhu@ubuntu:~/demo-dagshub$ code .
 ```
 
-<img src="../images/dagshub-repo-vscode.png"
+<img src="../../images/dagshub-repo-vscode.png"
      alt="dvc-venv"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -222,13 +222,13 @@ Our data folder will now have two additional files :
 
     - Go to your demo-dagshub repository page
 
-    <img src="../images/add-dvc-remote.png"
+    <img src="../../images/add-dvc-remote.png"
         alt="dvc-venv"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
     - Click on the green button that says 'Remote' and go to 'Data' tab. Again from the Data tab to to DVC tab, you should see a section that says 'Add a DagsHub DVC Remote'
    
-    <img src="../images/dagshub-dvc-remote.png"
+    <img src="../../images/dagshub-dvc-remote.png"
         alt="dvc-venv"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -244,7 +244,7 @@ Our data folder will now have two additional files :
 
     - Right below the 'Add a DagsHub DVC Remote' section you will be able to see the commands taht we need to run to setup our credentials
 
-    <img src="../images/dagshub-dvc-remote.png"
+    <img src="../../images/dagshub-dvc-remote.png"
         alt="dvc-venv"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -330,14 +330,14 @@ To https://dagshub.com/SiddhuShkya/demo-dagshub.git
 
 11. Go back to your (demo-dagshub) repository page and reload it. You should see all your commited files and alongside it you should also be able to see that both DVC and Git has been enabled
 
-<img src="../images/git-dvc-enabled.png"
+<img src="../../images/git-dvc-enabled.png"
         alt="dvc-venv"
         style="border:1px solid white; padding:1px; background:#fff;" />
 
 
 > You can also view you data pipeline from the DVC tab as well as the files that are managed by the DVC 
 
-<img src="../images/dvc-datapipeline.png" 
+<img src="../../images/dvc-datapipeline.png" 
     alt="Image Caption" 
     style="border:1px solid white; padding:1px; background:#fff;" />
 
@@ -352,7 +352,7 @@ We can create and track multiple versions of the same data using DVC with DagsHu
 
 1. Lets update our current data (diabetes.csv), for now we are just going to remove the first 5 rows of our data
 
-<img src="../images/update-diabetes-data.png" 
+<img src="../../images/update-diabetes-data.png" 
     alt="Image Caption" 
     style="border:1px solid white; padding:1px; background:#fff;" />
 

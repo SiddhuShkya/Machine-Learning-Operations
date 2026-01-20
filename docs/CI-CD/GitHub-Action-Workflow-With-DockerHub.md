@@ -20,7 +20,7 @@ In this section, we are going to create our github project repo and initialize o
 
 1.1 Go to to your GitHub Dashboard and create your new empty repository for this project (Name it whatever you want). Once you create the repo, clone it onto your local machine
 
-<img src="../images/github-action-ci-cd.png"
+<img src="../../images/github-action-ci-cd.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -106,7 +106,7 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-CI-CD$ source venv/bin/activate
 
 > Verify the commit
 
-<img src="../images/github-ci-cd-initial-commit.png"
+<img src="../../images/github-ci-cd-initial-commit.png"
      alt="Image Caption"
      style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 ---
@@ -194,31 +194,31 @@ Finally, in this section we are going to build our YAML file (cicd.yml) to creat
 
 In my case, the dockerhub username is: `shkyasid`
 
-<img src="../images/dockerhub-username.png"
+<img src="../../images/dockerhub-username.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
 > For the dockerhub password, go to Account settings, and from there click on 'Personal access token' 
 
-<img src="../images/dockerhub-personal-access-token.png"
+<img src="../../images/dockerhub-personal-access-token.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
 > Click on 'Generate new token' and create a new token with the below informations
 
-<img src="../images/dockerhub-new-token.png"
+<img src="../../images/dockerhub-new-token.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
 > You should be able to see and copy your generated personal access token. The token will start with 'dckr_'. Copy the generated token, and go to your github repository's settings tab
 
-<img src="../images/github-repo-settings.png"
+<img src="../../images/github-repo-settings.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
 > In the settings tab, you should see something called as secret and variables under Security. From there click on actions and create 2 new repository secret by the names of DOCKER_USERNAME & DOCKER_PASSWORD
 
-<img src="../images/github-repository-secret.png"
+<img src="../../images/github-repository-secret.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -227,7 +227,7 @@ In my case, the dockerhub username is: `shkyasid`
 
 > After adding your new secrets, you should be able to see something like this:
 
-<img src="../images/new-repository-secrets.png"
+<img src="../../images/new-repository-secrets.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -335,7 +335,7 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-CI-CD$ git push origin main
 
 > Go to github repo's Actions tab, to see whether the workflow (jobs) has been successfully executed or not
 
-<img src="../images/docker-cicd-actions.png"
+<img src="../../images/docker-cicd-actions.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -353,7 +353,7 @@ siddhu@ubuntu:~/Desktop/GitHub-Action-CI-CD$ git push origin main
 
 > Go to your [Dockerhub](https://hub.docker.com/) Account's Repositories page
 
-<img src="../images/flask-test-app-image.png"
+<img src="../../images/flask-test-app-image.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
@@ -378,7 +378,7 @@ docker run -p 5000:5000 shkyasid/flask-test-app:latest
 ```text
 http://127.0.0.1:5000/
 ```
-<img src="../images/flask-test-app-run.png"
+<img src="../../images/flask-test-app-run.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
 
