@@ -416,6 +416,6 @@ http://localhost:8080/
     </tr>
   </table>
 
-  ---
+---
 
 # <div align="center">Thank You for Going Through This Guide! 🙏✨</div>

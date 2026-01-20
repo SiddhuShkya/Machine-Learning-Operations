@@ -381,3 +381,7 @@ http://127.0.0.1:5000/
 <img src="../images/flask-test-app-run.png"
     alt="Image Caption"
     style="border:1px solid white; padding:1px; background:#fff; width: 3000px;" />
+
+---
+
+# <div align="center">Thank You for Going Through This Guide! 🙏✨</div>
