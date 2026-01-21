@@ -8,7 +8,7 @@ multiple systems
 
 ---
 
-### Setting Up Airflow With Astronomer (Astro)
+### 1. Setting Up Airflow With Astronomer (Astro)
 
 Astronomer is a managed platform for Apache Airflow that simplifies running and scaling airflow while providing additional enterprises features like monitoring, security and automation. The best thing about this platform is that it will be running your airflow within a docker container.
 
@@ -27,13 +27,13 @@ siddhu@ubuntu:~/Desktop$ curl -sSL install.astronomer.io | sudo bash -s -- v1.36
 ```
 > After installing astro CLI to your local machine, you may start setting up your airflow by following the below instructions : 
 
-1. Create a new directory (airflow-astro)
+1.1 Create a new directory (airflow-astro)
 
 ```bash
 siddhu@ubuntu:~/Desktop$ mkdir airflow-astro
 ```
 
-2. Go inside the newly created directory and initialize an astro project
+1.2 Go inside the newly created directory and initialize an astro project
 
 ```bash
 siddhu@ubuntu:~/Desktop$ cd airflow-astro/
@@ -41,7 +41,7 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev init
 Initialized empty Astro project in /home/siddhu/Desktop/airflow-astro
 ```
 
-3. Open your VS-Code
+1.3 Open your VS-Code
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ code .
@@ -79,7 +79,7 @@ Astro Airflow Project Structure (Tree View)
         └── 📄 test_dag_example.py  # Example DAG test
 ```
 
-4. Run the project
+1.4 Run the project
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
@@ -91,7 +91,7 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
      alt="Astro Conatienr in Docker Desktop"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
-5. Open Airflow UI
+1.5 Open Airflow UI
 
 ```bash
 http://localhost:8080/
@@ -115,7 +115,7 @@ http://localhost:8080/
 
 Note : Xcom tells you what information is being passed from one task to another task.
 
-6. Stopping the Project/Airflow UI 
+1.6 Stopping the Project/Airflow UI 
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ sudo astro dev stop
@@ -125,11 +125,11 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ sudo astro dev stop
 
 ---
 
-### Building your first DAG with Airflow
+### 2. Building your first DAG with Airflow
 
 In here, we will be creating a basic ML pipeline, we won't be defining what kind of functionality it is basically going to do. Instead we will be discussing the basic skeleton of how we can create our DAG, define our tasks and also how we ran run it.
 
-1. Create a new file (mlpipeline.py) inside the dags folder of your astro project directory
+2.1 Create a new file (mlpipeline.py) inside the dags folder of your astro project directory
 
 ```text
 .
@@ -156,7 +156,7 @@ In here, we will be creating a basic ML pipeline, we won't be defining what kind
         └── 📄 test_dag_example.py  
 ```
 
-2. Copy and paste the below code to your newly created python file (mlpipeline.py)
+2.2 Copy and paste the below code to your newly created python file (mlpipeline.py)
 
 ```python
 from airflow import DAG
@@ -189,7 +189,7 @@ with DAG('ml_pipline', start_date=datetime(2025, 1, 1), schedule='@weekly') as d
 
 ```
 
-3. Run the project
+2.3 Run the project
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
@@ -222,19 +222,19 @@ ports:
 siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
 ```
 
-4. Open the Airflow UI
+2.4 Open the Airflow UI
 
 ```bash
 http://localhost:8080/
 ```
 
-5. In the dags, you will be able to see that you have 2 dags including the one you just created (ml_pipleline)
+2.5 In the dags, you will be able to see that you have 2 dags including the one you just created (ml_pipleline)
 
 <img src="../../images/airflow-ui-dags.png"
      alt="Astro Conatienr in Docker Desktop"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
-6. Go inside your newly created dag and run/trigger it to see the running tasks and some important informations related to it.
+2.6 Go inside your newly created dag and run/trigger it to see the running tasks and some important informations related to it.
 
 <table>
   <tr>
@@ -251,7 +251,7 @@ http://localhost:8080/
   </tr>
 </table>
 
-7. Stop the Project/Airflow UI 
+2.7 Stop the Project/Airflow UI 
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ sudo astro dev stop
@@ -266,11 +266,11 @@ siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev restart
 ```
 ---
 
-### Apache Airflow With TaskFlow API
+### 3. Apache Airflow With TaskFlow API
 
 Apache Airflow introduced the TaskFlow API which allows you to create tasks using Python decorators like @task. This is a cleaner and more intuitive way of writing tasks without needing to manually use operators like PythonOperator. Airflow with taskflow api example : 
 
-1. Create a new dag file (taskflowapi.py) inside the dags folder of your astro project directory
+3.1 Create a new dag file (taskflowapi.py) inside the dags folder of your astro project directory
 
 ```text
 .
@@ -298,7 +298,7 @@ Apache Airflow introduced the TaskFlow API which allows you to create tasks usin
         └── 📄 test_dag_example.py  
 ```
 
-2. Copy and paste the below code to your newly created dag file (taskflowapi.py)
+3.2 Copy and paste the below code to your newly created dag file (taskflowapi.py)
 
 ```python
 from airflow import DAG
@@ -357,32 +357,32 @@ with DAG(
 
 ```
 
-3. Run the project
+3.3 Run the project
 
 ```bash
 siddhu@ubuntu:~/Desktop/airflow-astro$ astro dev start
 ```
 
-4. Open the Airflow UI
+3.4 Open the Airflow UI
 
 ```bash
 http://localhost:8080/
 ```
 
-5. In the dags tab, you will be able to see your newly created dag (taskflow_api_dag)
+3.5 In the dags tab, you will be able to see your newly created dag (taskflow_api_dag)
 
 <img src="../../images/taskflow-api-dag.png"
      alt="Taskflow-API-DAG"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
 
-6. Go inside your newly created dag (taskflow_api_dag) and run/trigger it. If you see all tasks green after execution it means that all the tasks has been executed successfully.
+3.6 Go inside your newly created dag (taskflow_api_dag) and run/trigger it. If you see all tasks green after execution it means that all the tasks has been executed successfully.
 
 <img src="../../images/taskflow-api-dag-status.png"
      alt="Taskflow-API-DAG-status"
      style="border:1px solid white; padding:1px; background:#fff;" />
 
-7. You can now view the logs and Xcom of all your tasks. Examples :
+3.7 You can now view the logs and Xcom of all your tasks. Examples :
 
   - Task 1 : start_number
   <table>
