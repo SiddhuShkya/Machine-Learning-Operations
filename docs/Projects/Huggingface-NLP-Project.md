@@ -1107,3 +1107,226 @@ siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git add .
 siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git commit -m 'Finetuned HF Model'
 siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git push origin main
 ```
+
+---
+
+### 4. Modularizing the Project & Building the End-to-End Pipeline
+
+In this section, we will convert our previously created notebook (which was written as a linear, step-by-step script) into a modular, reusable, and clean code structure. This transformation will make our project scalable, maintainable, and production-ready.
+
+We will also define our workflow so that we can automate the entire end-to-end project creation—from data ingestion to deployment. The workflow includes:
+
+- `Config.yaml` => Store file paths, directories, and basic configuration settings.
+- `Params.yaml` => Store hyperparameters and model-specific settings such as test size, random seed, model parameters, etc.
+- `Config Entity` => Create structured data models (using dataclasses) to represent configuration settings.
+- `Configuration Manager` => A centralized class responsible for reading configuration files and providing configuration objects to the components.
+- `Components` => 
+    - Refactor the core modules to follow modular design:
+        - Data Ingestion
+        - Data Transformation
+        - Model Trainer
+- `Pipelines` => 
+Build the Training Pipeline and Prediction Pipeline to automate the complete workflow.
+- `Frontend – APIs` => 
+    - Create APIs for:
+        - Training
+        - Batch Prediction
+    - This will enable the project to be deployed and used as a real application.
+
+---
+
+4.1 Let's first write our constants and yaml files (config & params). copy paste the below to their respective files
+
+> constants
+
+```python
+## src/textSummarizer/constants/__init__.py
+
+from pathlib import Path
+
+CONFIG_FILE_PATH = Path("config/config.yaml")
+PARAMS_FILE_PATH = Path("params.yaml")
+```
+
+> config.yaml
+
+```yaml
+## config/config.yaml
+
+artifacts_root: artifacts
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  source_url: "https://github.com/SiddhuShkya/Text-Summarizer-With-HF/raw/main/data/summarizer-data.zip"
+  local_data_file: artifacts/data_ingestion/summarizer-data.zip
+  unzip_dir: artifacts/data_ingestion
+```
+
+> params.yaml
+
+```yaml
+key: "value"
+```
+
+4.2 Now let's implement our data ingestion
+
+For better understanding, we will be implementing the data ingestion process using a jupyter notebook file, and then we will try to convert it into a python script file (.py)
+
+> Go ahead and create a new notebook file (data-ingestion.ipynb) inside your project's research folder.
+
+```text
+.
+├── app.py
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+│   ├── data-ingestion.ipynb  <----------------------- ## Your new notebook file
+│   ├── .ipynb_checkpoints
+│   ├── pegasus-finetuned
+│   ├── pegasus-model
+│   ├── pegasus-tokenizer
+│   ├── research-notebook.ipynb
+│   ├── summarizer-data
+│   ├── summarizer-data.zip
+│   ├── text-summarizer.ipynb
+│   └── text-summarizer.ipynb - Colab.pdf
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+> Copy paste the below code cell by cell
+
+- Check your current working directory
+
+```python
+## Cell 1
+
+%pwd
+```
+```text
+'/home/siddhu/Desktop/Text-Summarizer-With-HF/research'
+```
+
+- Move your notebook file to our parent project directory.
+
+```python
+## Cell 2
+
+import os
+
+os.chdir("../")
+%pwd
+```
+```text
+'/home/siddhu/Desktop/Text-Summarizer-With-HF'
+```
+
+- Import all the necessary dependencies
+
+```python
+## Cell 3
+
+import zipfile
+from pathlib import Path
+import urllib.request as request
+from dataclasses import dataclass
+from src.textSummarizer.constants import *
+from src.textSummarizer.logging import logger
+from src.textSummarizer.utils.common import read_yaml, create_directories
+```
+
+- Lets create a dataclass to read our yaml file and store every fields. This  will be used as input for our data ingestion module to create folders and store data automatically
+
+```python
+## Cell 4
+
+@dataclass
+class DataIngestionConfig:
+    root_dir: str
+    source_url: str
+    local_data_file: str
+    unzip_dir: str
+```
+
+- Lets create another class for defining our configuration manager
+
+```python
+## Cell 5
+
+class ConfigurationManager:
+    
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+        
+    def get_data_ingestion_config(self) -> DataIngestionConfig:
+        config = self.config.data_ingestion
+        create_directories([config.root_dir])
+        data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            source_url=config.source_url,  
+            local_data_file=config.local_data_file,
+            unzip_dir=config.unzip_dir,
+        )
+        return data_ingestion_config
+```
+
+- Define the components
+
+```python
+## Cell 6
+
+class DataIngestion:
+    def __init__(self, config: DataIngestionConfig):
+        self.config = config
+        
+    def download_data(self):
+        if not os.path.exists(self.config.local_data_file):
+            file_name, headers = request.urlretrieve(
+                url=self.config.source_url, 
+                filename=self.config.local_data_file
+            )
+            logger.info("File downloaded successfully!")
+        else:
+            logger.info(f"File already exists at {self.config.local_data_file}. Skipping download.")
+        
+    def extract_zip_file(self):
+        unzip_path = self.config.unzip_dir
+        os.makedirs(unzip_path, exist_ok=True)
+        with zipfile.ZipFile(self.config.local_data_file, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
+        logger.info(f"File extracted successfully at {unzip_path}")
+```
+
+- You can use the below code to test if everything is working fine or not.
+
+```python
+## Cell 7 (Optional)
+
+config = ConfigurationManager()
+data_ingestion_config = config.get_data_ingestion_config()
+data_ingestion = DataIngestion(config=data_ingestion_config)
+data_ingestion.download_data()
+data_ingestion.extract_zip_file()
+```
+```text
+[2026-01-25 14:10:45,695: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-25 14:10:45,696: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-25 14:10:45,697: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-25 14:10:45,698: INFO: common: Directory 'artifacts/data_ingestion' created successfully or already exists.]
+[2026-01-25 14:10:47,557: INFO: 2552295685: File downloaded successfully!]
+[2026-01-25 14:10:47,614: INFO: 2552295685: File extracted successfully at artifacts/data_ingestion]
+```
