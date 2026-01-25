@@ -853,7 +853,18 @@ trainer = Trainer(
 trainer.train()
 ```
 ```sh
-TrainOutput(global_step=52, training_loss=2.9682579774122972, metrics={'train_runtime': 288.3112, 'train_samples_per_second': 2.841, 'train_steps_per_second': 0.18, 'total_flos': 313176745058304.0, 'train_loss': 2.9682579774122972, 'epoch': 1.0})
+TrainOutput(
+    global_step=52, 
+    training_loss=2.9682579774122972, 
+    metrics={
+        'train_runtime': 288.3112, 
+        'train_samples_per_second': 2.841, 
+        'train_steps_per_second': 0.18, 
+        'total_flos': 313176745058304.0, 
+        'train_loss': 2.9682579774122972, 
+        'epoch': 1.0
+    }
+)
 ```
 
 > Evaluate our model
@@ -971,4 +982,128 @@ pd.DataFrame(rouge_dict, index=[f'pegasus-finetuned'])
 
 model_pegasus.save_pretrained("pegasus-model")
 tokenizer.save_pretrained("pegasus-tokenizer")
+```
+```sh
+('pegasus-tokenizer/tokenizer_config.json',
+ 'pegasus-tokenizer/special_tokens_map.json',
+ 'pegasus-tokenizer/spiece.model',
+ 'pegasus-tokenizer/added_tokens.json',
+ 'pegasus-tokenizer/tokenizer.json')
+```
+
+> Verify if the model and tokenizer have been saved or not
+
+```sh
+siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ cd research/
+siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ tree -a -L 3
+.
+├── pegasus-finetuned
+├── pegasus-model  <---------------- ## Saved Model
+│   ├── config.json
+│   ├── generation_config.json
+│   └── model.safetensors
+├── pegasus-tokenizer  <------------ ## Saved Tokenizer
+│   ├── special_tokens_map.json
+│   ├── spiece.model
+│   ├── tokenizer_config.json
+│   └── tokenizer.json
+├── research-notebook.ipynb
+├── summarizer-data
+│   ├── test.csv
+│   ├── train.csv
+│   └── validation.csv
+├── summarizer-data.zip
+└── text_summarizer.ipynb
+```
+
+> Load the model & tokenizer
+
+- Define the path to our saved model and tokenizer
+```python
+model_path = "./pegasus-model"
+tokenizer_path = "./pegasus-tokenizer"
+```
+- Load our saved model and tokenizer
+```python
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+
+tokenizer = PegasusTokenizer.from_pretrained(tokenizer_path)
+model = PegasusForConditionalGeneration.from_pretrained(model_path)
+```
+- Define our generation configuration
+
+```python
+gen_kwargs = {
+    "length_penalty": 0.8,
+    "num_beams": 8,
+    "max_length": 128,
+}
+```
+
+- Test our saved model
+
+```python
+# 1. Grab your text from the dataset
+sample_text = train_dataset[0]['dialogue']
+reference = train_dataset[0]['summary']
+
+# 2. Tokenize the input dialogue
+# We use truncation=True to ensure it fits within the model's 1024 token limit
+inputs = tokenizer(sample_text, truncation=True, padding="longest", return_tensors="pt")
+
+# 3. Generate the summary
+# The model produces token IDs
+summary_ids = model.generate(
+    inputs["input_ids"], 
+    max_length=128, 
+    num_beams=4, 
+    length_penalty=2.0, 
+    early_stopping=True
+)
+
+# 4. Decode the IDs back into a string
+decoded_summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+
+# 5. Compare the results
+print("--- DIALOGUE ---")
+print(sample_text)
+print("\n--- REFERENCE SUMMARY (Ground Truth) ---")
+print(reference)
+print("\n--- MODEL GENERATED SUMMARY ---")
+print(decoded_summary)
+```
+```text
+--- DIALOGUE ---
+Amanda: I baked  cookies. Do you want some?
+Jerry: Sure!
+Amanda: I'll bring you tomorrow :-)
+
+--- REFERENCE SUMMARY (Ground Truth) ---
+Amanda baked cookies and will bring Jerry some tomorrow.
+
+--- MODEL GENERATED SUMMARY ---
+Amanda: I baked cookies. Do you want some? Jerry: Sure! <n> Amanda: . <n> I'll bring you tomorrow :-), Jerry
+```
+
+> Now that our model has been trained as well as saved, lets commit our current changes to our github repository
+
+- Before commiting, add the below files and folders to .gitignore file
+
+```text
+/venv
+/artifcats
+
+summarizer-data.zip
+research/pegasus-finetuned/
+research/pegasus-model/
+research/pegasus-tokenizer/
+research/summarizer-data/
+```
+
+- Commit the changes to our github repo
+
+```sh
+siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git add .
+siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git commit -m 'Finetuned HF Model'
+siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF/research$ git push origin main
 ```
