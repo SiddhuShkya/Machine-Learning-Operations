@@ -171,6 +171,7 @@ for filepath in list_of_files:
 
 /venv
 /artifcats
+/logs
 ```
 
 1.6 Add, commit and push our changes to the main branch of our github repository
@@ -1092,6 +1093,7 @@ Amanda: I baked cookies. Do you want some? Jerry: Sure! <n> Amanda: . <n> I'll b
 ```text
 /venv
 /artifcats
+/logs
 
 summarizer-data.zip
 research/pegasus-finetuned/
@@ -1160,6 +1162,11 @@ data_ingestion:
   source_url: "https://github.com/SiddhuShkya/Text-Summarizer-With-HF/raw/main/data/summarizer-data.zip"
   local_data_file: artifacts/data_ingestion/summarizer-data.zip
   unzip_dir: artifacts/data_ingestion
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: artifacts/data_ingestion/summarizer-data
+  tokenizer_name: "google/pegasus-cnn_dailymail"
 ```
 
 > params.yaml
@@ -1505,5 +1512,456 @@ params.yaml
 ```sh
 git add .
 git commit -m 'Data Ingestion Modularization Completed'
+git push origin main
+```
+
+4.3 Now lets implement our data transformation
+
+In this we are going proceed ahead and implement the data transformation which is nothing but feature engineering.
+
+Similar to what we did for data ingestion, for better understanding, we will be implementing the data transformation process using a jupyter notebook file first, and then we will try to convert it into a python script file (.py)
+
+> Create the new notebook file (data-transformation.ipynb) inside your research folder
+
+```text
+.
+├── app.py
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+│   ├── data-transformation.ipynb  <----------------------- ## Your new notebook file
+│   ├── data-ingestion.ipynb  
+│   ├── .ipynb_checkpoints
+│   ├── pegasus-finetuned
+│   ├── pegasus-model
+│   ├── pegasus-tokenizer
+│   ├── research-notebook.ipynb
+│   ├── summarizer-data
+│   ├── summarizer-data.zip
+│   ├── text-summarizer.ipynb
+│   └── text-summarizer.ipynb - Colab.pdf
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+> Copy paste the below code cell by cell:
+
+- Update the present working directory to your parent folder
+
+```python
+## Cell 1
+
+import os
+
+os.chdir('../')
+%pwd
+```
+```text
+'/home/siddhu/Desktop/Text-Summarizer-With-HF'
+```
+
+- Import necessary dependencies
+
+```python
+## Cell 2
+
+import pandas as pd
+from dataclasses import dataclass
+from pathlib import Path
+from src.textSummarizer.logging import logger
+from transformers import AutoTokenizer
+from datasets import load_from_disk, Dataset, DatasetDict
+from src.textSummarizer.constants import *
+from src.textSummarizer.utils.common import read_yaml, create_directories
+```
+
+- Create dataclass to store data transformation fields
+
+```python
+## Cell 3
+
+@dataclass
+class DataTransformationConfig:
+    root_dir: Path
+    data_path: Path
+    tokenizer_name: Path
+```
+
+- Create our configuration manager
+
+```python
+## Cell 4
+
+class ConfigurationManager:
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+        create_directories([config.root_dir])
+        data_transformation_config = DataTransformationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            tokenizer_name=config.tokenizer_name
+        )
+        return data_transformation_config
+```
+
+- Implement Our Data Transformation component
+
+```python
+## Cell 5
+
+class DataTransformation:
+    
+    def __init__(self, config: DataTransformationConfig):
+        self.config = config
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.config.tokenizer_name
+        )
+
+    def convert_examples_to_features(self, example_batch):
+        inputs = self.tokenizer(
+            example_batch["dialogue"],
+            max_length=512,
+            truncation=True,
+        )
+
+        with self.tokenizer.as_target_tokenizer():
+            targets = self.tokenizer(
+                example_batch["summary"],
+                max_length=128,
+                truncation=True,
+            )
+
+        return {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"],
+            "labels": targets["input_ids"],
+        }
+
+    def convert(self):
+        dataset_splits = {}
+
+        for split in ["train", "validation", "test"]:
+            csv_path = os.path.join(
+                self.config.data_path, f"{split}.csv"
+            )
+
+            df = pd.read_csv(csv_path)
+            ds = Dataset.from_pandas(df)
+
+            ds = ds.map(
+                self.convert_examples_to_features,
+                batched=True,
+                remove_columns=ds.column_names,
+            )
+
+            dataset_splits[split] = ds
+
+        summarizer_dataset = DatasetDict(dataset_splits)
+
+        summarizer_dataset.save_to_disk(
+            os.path.join(self.config.root_dir, "summarizer_dataset")
+        )
+```
+
+- You can use the below code to test if everything is working fine or not.
+
+```python 
+## Cell 6
+
+config = ConfigurationManager()
+data_transformation_config = config.get_data_transformation_config()
+data_transformation = DataTransformation(config=data_transformation_config)
+data_transformation.convert()
+```
+```text
+[2026-01-27 14:19:07,573: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-27 14:19:07,574: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-27 14:19:07,574: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-27 14:19:07,575: INFO: common: Directory 'artifacts/data_transformation' created successfully or already exists.]
+Map:   0%|          | 0/14731 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████| 14731/14731 [00:01<00:00, 10073.65 examples/s]
+Map:   0%|          | 0/818 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████| 818/818 [00:00<00:00, 10022.17 examples/s]
+Map:   0%|          | 0/819 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████| 819/819 [00:00<00:00, 3605.72 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 14731/14731 [00:00<00:00, 777733.90 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 818/818 [00:00<00:00, 196547.93 examples/s]
+Saving the dataset (1/1 shards): 100%|██████████| 819/819 [00:00<00:00, 214870.52 examples/s]
+```
+> Since, all the above code is running fine, lets modularize it by copy pasting the code blocks to their respective files
+
+- Update entity
+
+```python
+## src/textSummarizer/entity/__init__.py
+
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass
+class DataIngestionConfig:
+    root_dir: str
+    source_url: str
+    local_data_file: str
+    unzip_dir: str
+
+@dataclass
+class DataTransformationConfig:
+    root_dir: Path
+    data_path: Path
+    tokenizer_name: Path
+```
+
+- Update config
+
+```python
+## src/textSummarizer/config/configuration.py
+
+from src.textSummarizer.constants import *
+from src.textSummarizer.entity import DataIngestionConfig, DataTransformationConfig
+from src.textSummarizer.utils.common import read_yaml, create_directories
+
+print(CONFIG_FILE_PATH)
+print(PARAMS_FILE_PATH)
+
+
+class ConfigurationManager:
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+
+    def get_data_ingestion_config(self) -> DataIngestionConfig:
+        config = self.config.data_ingestion
+        create_directories([config.root_dir])
+        data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            source_url=config.source_url,
+            local_data_file=config.local_data_file,
+            unzip_dir=config.unzip_dir,
+        )
+        return data_ingestion_config
+
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+        create_directories([config.root_dir])
+        data_transformation_config = DataTransformationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            tokenizer_name=config.tokenizer_name,
+        )
+        return data_transformation_config
+```
+
+- Update components, also create a new python file (data_transformation.py) inside the src/textSummarizer/components for this step
+
+```python
+## src/textSummarizer/components/data_transformation.py
+
+import os
+import pandas as pd
+from transformers import AutoTokenizer
+from datasets import Dataset, DatasetDict
+from src.textSummarizer.entity import DataTransformationConfig
+
+
+class DataTransformation:
+    def __init__(self, config: DataTransformationConfig):
+        self.config = config
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_name)
+
+    def convert_examples_to_features(self, example_batch):
+        inputs = self.tokenizer(
+            example_batch["dialogue"],
+            max_length=512,
+            truncation=True,
+        )
+
+        with self.tokenizer.as_target_tokenizer():
+            targets = self.tokenizer(
+                example_batch["summary"],
+                max_length=128,
+                truncation=True,
+            )
+
+        return {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"],
+            "labels": targets["input_ids"],
+        }
+
+    def convert(self):
+        dataset_splits = {}
+
+        for split in ["train", "validation", "test"]:
+            csv_path = os.path.join(self.config.data_path, f"{split}.csv")
+
+            df = pd.read_csv(csv_path)
+            ds = Dataset.from_pandas(df)
+
+            ds = ds.map(
+                self.convert_examples_to_features,
+                batched=True,
+                remove_columns=ds.column_names,
+            )
+
+            dataset_splits[split] = ds
+
+        summarizer_dataset = DatasetDict(dataset_splits)
+
+        summarizer_dataset.save_to_disk(
+            os.path.join(self.config.root_dir, "summarizer_dataset")
+        )
+
+```
+
+- Create our second stage for our pipeline (stage2_data_transformation.py)
+
+```python
+## src/textSummarizer/pipeline/stage2_data_transformation.py
+
+from src.textSummarizer.config.configuration import ConfigurationManager
+from src.textSummarizer.components.data_transformation import DataTransformation
+from src.textSummarizer.logging import logger
+
+class DataTransformationTrainingPipeline:
+    def __init__(self):
+        pass
+
+    def initiate_data_transformation(self):
+        config = ConfigurationManager()
+        data_transformation_config = config.get_data_transformation_config()
+        data_transformation = DataTransformation(config=data_transformation_config)
+        data_transformation.convert()
+```
+
+> Now, lets test if everyting is working fine or not
+
+- Update main.py. Copy paste the below code to main.py
+
+```python
+## main.py
+
+from src.textSummarizer.logging import logger
+from src.textSummarizer.pipeline.stage1_data_ingestion import (
+    DataIngestionTrainingPipeline,
+)
+from src.textSummarizer.pipeline.stage2_data_transformation import (
+    DataTransformationTrainingPipeline,
+)
+
+STAGE_NAME = "Data Ingestion Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    data_ingestion = DataIngestionTrainingPipeline()
+    data_ingestion.initiate_data_ingestion()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Data Transformation Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    from src.textSummarizer.pipeline.stage2_data_transformation import (
+        DataTransformationTrainingPipeline,
+    )
+
+    data_transformation = DataTransformationTrainingPipeline()
+    data_transformation.initiate_data_transformation()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+```
+
+- Delete the artifacts folder if it already exists in your project folder
+
+```text
+.
+├── app.py
+├── artifacts   <---------------- # Delete this, if exists
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+- Run main.py
+
+```sh
+(/home/siddhu/Desktop/Text-Summarizer-With-HF/venv) siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ python main.py 
+config/config.yaml
+params.yaml
+[2026-01-27 15:52:39,495: INFO: main: >>>>>> Stage Data Ingestion Stage started <<<<<<]
+[2026-01-27 15:52:39,496: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-27 15:52:39,497: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-27 15:52:39,497: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-27 15:52:39,497: INFO: common: Directory 'artifacts/data_ingestion' created successfully or already exists.]
+[2026-01-27 15:52:42,797: INFO: data_ingestion: File downloaded successfully!]
+[2026-01-27 15:52:42,844: INFO: data_ingestion: File extracted successfully at artifacts/data_ingestion]
+[2026-01-27 15:52:42,845: INFO: main: >>>>>> Stage Data Ingestion Stage completed <<<<<<]
+[2026-01-27 15:52:42,845: INFO: main: >>>>>> Stage Data Transformation Stage started <<<<<<]
+[2026-01-27 15:52:42,846: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-27 15:52:42,846: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-27 15:52:42,846: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-27 15:52:42,846: INFO: common: Directory 'artifacts/data_transformation' created successfully or already exists.]
+Map:   0%|                                                                                 | 0/14731 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████████████████████████████████████████████████████████████| 14731/14731 [00:01<00:00, 10365.57 examples/s]
+Map:   0%|                                                                                   | 0/818 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████████████████████████████████████████████████████████████████| 818/818 [00:00<00:00, 10504.16 examples/s]
+Map:   0%|                                                                                   | 0/819 [00:00<?, ? examples/s]/home/siddhu/Desktop/Text-Summarizer-With-HF/venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:4174: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map: 100%|██████████████████████████████████████████████████████████████████████| 819/819 [00:00<00:00, 10417.55 examples/s]
+Saving the dataset (1/1 shards): 100%|█████████████████████████████████████| 14731/14731 [00:00<00:00, 828723.27 examples/s]
+Saving the dataset (1/1 shards): 100%|█████████████████████████████████████████| 818/818 [00:00<00:00, 276198.73 examples/s]
+Saving the dataset (1/1 shards): 100%|█████████████████████████████████████████| 819/819 [00:00<00:00, 286882.83 examples/s]
+[2026-01-27 15:52:46,637: INFO: main: >>>>>> Stage Data Transformation Stage completed <<<<<<]
+```
+
+*If you see your output similar to the above, then everything is working fine till now*
+
+- Commit and push the changes to github
+
+```sh
+git add .
+git commit -m 'Data Transformation Modularization Completed'
 git push origin main
 ```
