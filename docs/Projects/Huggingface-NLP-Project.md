@@ -1330,3 +1330,180 @@ data_ingestion.extract_zip_file()
 [2026-01-25 14:10:47,557: INFO: 2552295685: File downloaded successfully!]
 [2026-01-25 14:10:47,614: INFO: 2552295685: File extracted successfully at artifacts/data_ingestion]
 ```
+
+> Since, the above code is running fine, lets modularize it by copy pasting the code blocks to their respective files
+
+- Update entity
+
+```python
+## src/textSummarizer/entity/__init__.py
+
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass
+class DataIngestionConfig:
+    root_dir: str
+    source_url: str
+    local_data_file: str
+    unzip_dir: str
+```
+
+- Update config
+
+```python
+## src/textSummarizer/config/configuration.py
+
+from src.textSummarizer.constants import *
+from src.textSummarizer.entity import DataIngestionConfig
+from src.textSummarizer.utils.common import read_yaml, create_directories
+
+class ConfigurationManager:
+    
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+        
+    def get_data_ingestion_config(self) -> DataIngestionConfig:
+        config = self.config.data_ingestion
+        create_directories([config.root_dir])
+        data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            source_url=config.source_url,  
+            local_data_file=config.local_data_file,
+            unzip_dir=config.unzip_dir,
+        )
+        return data_ingestion_config
+```
+
+- Update Components, also create a new python file (data_ingetsion.py) inside the src/textSummarizer/components for this step
+
+```python
+## src/textSummarizer/components/data_ingestion.py
+
+import os
+import zipfile
+import urllib.request as request
+from src.textSummarizer.logging import logger
+from src.textSummarizer.entity import DataIngestionConfig
+
+class DataIngestion:
+    def __init__(self, config: DataIngestionConfig):
+        self.config = config
+
+    def download_data(self):
+        if not os.path.exists(self.config.local_data_file):
+            file_name, headers = request.urlretrieve(
+                url=self.config.source_url, filename=self.config.local_data_file
+            )
+            logger.info("File downloaded successfully!")
+        else:
+            logger.info(
+                f"File already exists at {self.config.local_data_file}. Skipping download."
+            )
+
+    def extract_zip_file(self):
+        unzip_path = self.config.unzip_dir
+        os.makedirs(unzip_path, exist_ok=True)
+        with zipfile.ZipFile(self.config.local_data_file, "r") as zip_ref:
+            zip_ref.extractall(unzip_path)
+        logger.info(f"File extracted successfully at {unzip_path}")
+```
+
+- Create our first stage for our pipeline (stage1_data_ingestion.py)
+
+```python
+## src/textSummarizer/pipeline/stage1_data_ingestion.py
+
+from src.textSummarizer.config.configuration import ConfigurationManager
+from src.textSummarizer.components.data_ingestion import DataIngestion
+from src.textSummarizer.logging import logger
+
+
+class DataIngestionTrainingPipeline:
+    def __init__(self):
+        pass
+
+    def initiate_data_ingestion(self):
+        config = ConfigurationManager()
+        data_ingestion_config = config.get_data_ingestion_config()
+        data_ingestion = DataIngestion(config=data_ingestion_config)
+        data_ingestion.download_data()
+        data_ingestion.extract_zip_file()
+```
+
+> Now, lets test if everyting is working fine or not
+
+- Update main.py. Copy paste the below code to main.py
+
+```python
+## main.py
+
+from src.textSummarizer.logging import logger
+from src.textSummarizer.pipeline.stage1_data_ingestion import (
+    DataIngestionTrainingPipeline,
+)
+
+STAGE_NAME = "Data Ingestion Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    data_ingestion = DataIngestionTrainingPipeline()
+    data_ingestion.initiate_data_ingestion()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+```
+
+- Delete the artifacts folder if it already exists in your project folder
+
+```text
+.
+├── app.py
+├── artifacts   <---------------- # Delete this, if exists
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+- Run main.py
+
+```sh
+(/home/siddhu/Desktop/Text-Summarizer-With-HF/venv) siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ python main.py 
+config/config.yaml
+params.yaml
+[2026-01-27 09:24:39,651: INFO: main: >>>>>> Stage Data Ingestion Stage started <<<<<<]
+[2026-01-27 09:24:39,651: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-27 09:24:39,652: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-27 09:24:39,652: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-27 09:24:39,652: INFO: common: Directory 'artifacts/data_ingestion' created successfully or already exists.]
+[2026-01-27 09:24:44,034: INFO: data_ingestion: File downloaded successfully!]
+[2026-01-27 09:24:44,082: INFO: data_ingestion: File extracted successfully at artifacts/data_ingestion]
+[2026-01-27 09:24:44,082: INFO: main: >>>>>> Stage Data Ingestion Stage completed <<<<<<]
+```
+
+*If you see your output similar to the above, then everything is working fine till now*
+
+- Commit and push the changes to github
+
+```sh
+git add .
+git commit -m 'Data Ingestion Modularization Completed'
+git push origin main
+```
