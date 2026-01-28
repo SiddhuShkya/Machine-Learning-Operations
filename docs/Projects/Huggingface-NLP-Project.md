@@ -47,6 +47,7 @@ siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ conda activate venv/
 ```text
 ## requirements.txt
 
+ipykernel
 transformers
 transformers[sentencepiece]
 datasets
@@ -59,13 +60,15 @@ tqdm
 PyYAML
 matplotlib
 torch
-notebook
 boto3
 mypy-boto3-s3
 python-box==6.0.2
 ensure==1.0.2
 uvicorn==0.18.3
 Jinja2==3.1.2
+notebook
+jupyter>=1.0.0
+ipywidgets>=8.0.0
 ```
 
 > Install the dependencies to your conda environment, using the requirements.txt file
@@ -1167,12 +1170,26 @@ data_transformation:
   root_dir: artifacts/data_transformation
   data_path: artifacts/data_ingestion/summarizer-data
   tokenizer_name: "google/pegasus-cnn_dailymail"
+
+model_trainer:
+  root_dir: artifacts/model_trainer
+  data_path: artifacts/data_transformation/summarizer_dataset
+  model_ckpt: "google/pegasus-cnn_dailymail"
 ```
 
 > params.yaml
 
 ```yaml
-key: "value"
+TrainerArguments:
+  num_train_epochs: 1
+  warmup_steps: 500
+  per_device_train_batch_size: 1
+  weight_decay: 0.01
+  logging_steps: 10
+  eval_strategy: "steps"
+  eval_steps: 500
+  save_steps: 100000
+  gradient_accumulation_steps: 16
 ```
 
 4.2 Now let's implement our data ingestion
@@ -1741,10 +1758,6 @@ from src.textSummarizer.constants import *
 from src.textSummarizer.entity import DataIngestionConfig, DataTransformationConfig
 from src.textSummarizer.utils.common import read_yaml, create_directories
 
-print(CONFIG_FILE_PATH)
-print(PARAMS_FILE_PATH)
-
-
 class ConfigurationManager:
     def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
         self.config = read_yaml(config_path)
@@ -1965,3 +1978,486 @@ git add .
 git commit -m 'Data Transformation Modularization Completed'
 git push origin main
 ```
+
+4.4 Finally, lets implement our model trainer
+
+In this section we are going to proceed ahead and implement our model trainer for this project.
+
+Similar to what we did for data ingestion and transformation, for better understanding, we will be implementing our model trainer process using a jupyter notebook file first, and then we will try to convert it into a python script file (.py)
+
+> Create the new notebook file (model-trainer.ipynb) inside your research folder
+
+```text
+.
+├── app.py
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+│   ├── model-trainer.ipynb  <----------------------- ## Your new notebook file
+│   ├── data-ingestion.ipynb  
+│   ├── .ipynb_checkpoints
+│   ├── pegasus-finetuned
+│   ├── pegasus-model
+│   ├── pegasus-tokenizer
+│   ├── research-notebook.ipynb
+│   ├── summarizer-data
+│   ├── summarizer-data.zip
+│   ├── text-summarizer.ipynb
+│   └── text-summarizer.ipynb - Colab.pdf
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+> Copy paste the below codes cell by cell
+
+- Update the present working directory to your parent folder
+
+```python
+## Cell 1
+
+import os
+
+os.chdir('../')
+%pwd
+```
+```text
+'/home/siddhu/Desktop/Text-Summarizer-With-HF'
+```
+
+- Import necessary dependencies
+
+```python
+## Cell 2
+
+import torch
+from src.textSummarizer.constants import *
+from src.textSummarizer.utils.common import read_yaml, create_directories
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import Trainer, TrainingArguments
+from transformers import DataCollatorForSeq2Seq
+from datasets import load_from_disk
+from dataclasses import dataclass
+from pathlib import Path
+```
+
+- Create dataclass to store fields of our model trainer config
+
+```python
+## Cell 3
+
+@dataclass
+class ModelTrainerConfig:
+    # From config.yaml
+    root_dir: Path
+    data_path: Path
+    model_ckpt: Path
+    # From params.yaml
+    num_train_epochs: int
+    warmup_steps: int
+    per_device_train_batch_size: int
+    weight_decay: float
+    logging_steps: int
+    eval_strategy: str
+    eval_steps: int
+    save_steps: float
+    gradient_accumulation_steps: int
+```
+
+- Create our configuration manager
+
+```python
+## Cell 4
+
+class ConfigurationManager:
+
+    def __init__(self, config_filepath=CONFIG_FILE_PATH, params_filepath=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_filepath)
+        self.params = read_yaml(params_filepath)
+        create_directories([self.config.artifacts_root])
+        
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        config = self.config.model_trainer
+        params = self.params.TrainerArguments
+        create_directories([config.root_dir])
+        model_trainer_config = ModelTrainerConfig(
+            root_dir=Path(config.root_dir),
+            data_path=Path(config.data_path),
+            model_ckpt=config.model_ckpt,
+            num_train_epochs=params.num_train_epochs,
+            warmup_steps=params.warmup_steps,
+            per_device_train_batch_size=params.per_device_train_batch_size,
+            weight_decay=params.weight_decay,
+            logging_steps=params.logging_steps,
+            eval_strategy=params.eval_strategy,
+            eval_steps=params.eval_steps,
+            save_steps=params.save_steps,
+            gradient_accumulation_steps=params.gradient_accumulation_steps
+        )
+        return model_trainer_config
+```
+
+- Create our model trainer component
+
+```python
+## Cell 5
+
+class ModelTrainer:
+    def __init__(self, config: ModelTrainerConfig):
+        self.config = config
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
+    def train(self):
+        # Load dataset
+        dataset = load_from_disk(self.config.data_path)
+        print(dataset)
+        
+        # Load model and tokenizer
+        model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_ckpt).to(self.device)
+        tokenizer = AutoTokenizer.from_pretrained(self.config.model_ckpt)
+
+        # Data collator
+        data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+        
+        # Training arguments
+        training_args = TrainingArguments(
+            output_dir=self.config.root_dir,
+            num_train_epochs=self.config.num_train_epochs,
+            per_device_train_batch_size=self.config.per_device_train_batch_size,
+            weight_decay=self.config.weight_decay,
+            logging_steps=self.config.logging_steps,
+            evaluation_strategy=self.config.eval_strategy,
+            warmup_steps=self.config.warmup_steps,
+            eval_steps=self.config.eval_steps,
+            save_steps=self.config.save_steps,
+            gradient_accumulation_steps=self.config.gradient_accumulation_steps,
+        )
+        
+        # Initialize Trainer
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=dataset['test'],
+            eval_dataset=dataset['validation'],
+            data_collator=data_collator,
+            tokenizer=tokenizer,
+        )
+        
+        # Start training
+        trainer.train()
+        
+        # Save the model and tokenizer
+        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus-model")
+        tokenizer.save_pretrained(os.path.join(self.config.root_dir), "pegasus-tokenizer")
+```
+
+- You can use the below code to test if everything is working fine or not.
+
+```python 
+## Cell 6
+
+config = ConfigurationManager()
+model_trainer_config = config.get_model_trainer_config()
+model_trainer = ModelTrainer(config=model_trainer_config)
+model_trainer.train()
+```
+```text
+OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 3.63 GiB of which 51.94 MiB is free. 
+```
+
+**📌 Important Note:**  
+
+You may encounter an **OutOfMemoryError** while training on a GPU with limited memory (like GTX 1650 with ~3.6 GB VRAM).  
+
+- Sometiimes, large models like Pegasus require more memory than our GPU has to offer.  
+- This can happen when loading the model or during the forward/backward pass.  
+
+
+-> *If you encounter such issues, what you can do is train your model from jupyter notebook in the google colab and then download the entire folder that are basically created while saving the model and directly save it to your project folder*
+
+
+> Now lets modularize our model trainer, by copy pasting the code blocks to their respective files
+
+- Update entity
+
+```python
+## src/textSummarizer/entity/__init__.py
+
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass
+class DataIngestionConfig:
+    root_dir: str
+    source_url: str
+    local_data_file: str
+    unzip_dir: str
+
+@dataclass
+class DataTransformationConfig:
+    root_dir: Path
+    data_path: Path
+    tokenizer_name: Path
+
+@dataclass
+class ModelTrainerConfig:
+    # From config.yaml
+    root_dir: Path
+    data_path: Path
+    model_ckpt: Path
+    # From params.yaml
+    num_train_epochs: int
+    warmup_steps: int
+    per_device_train_batch_size: int
+    weight_decay: float
+    logging_steps: int
+    eval_strategy: str
+    eval_steps: int
+    save_steps: float
+    gradient_accumulation_steps: int
+```
+
+- Update config
+
+```python
+## src/textSummarizer/config/configuration.py
+
+from src.textSummarizer.constants import CONFIG_FILE_PATH, PARAMS_FILE_PATH
+from pathlib import Path
+from src.textSummarizer.entity import DataIngestionConfig, DataTransformationConfig, ModelTrainerConfig
+from src.textSummarizer.utils.common import read_yaml, create_directories
+
+
+class ConfigurationManager:
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+
+    def get_data_ingestion_config(self) -> DataIngestionConfig:
+        config = self.config.data_ingestion
+        create_directories([config.root_dir])
+        data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            source_url=config.source_url,
+            local_data_file=config.local_data_file,
+            unzip_dir=config.unzip_dir,
+        )
+        return data_ingestion_config
+
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+        create_directories([config.root_dir])
+        data_transformation_config = DataTransformationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            tokenizer_name=config.tokenizer_name,
+        )
+        return data_transformation_config
+
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        config = self.config.model_trainer
+        params = self.params.TrainerArguments
+        create_directories([config.root_dir])
+        model_trainer_config = ModelTrainerConfig(
+            root_dir=Path(config.root_dir),
+            data_path=Path(config.data_path),
+            model_ckpt=config.model_ckpt,
+            num_train_epochs=params.num_train_epochs,
+            warmup_steps=params.warmup_steps,
+            per_device_train_batch_size=params.per_device_train_batch_size,
+            weight_decay=params.weight_decay,
+            logging_steps=params.logging_steps,
+            eval_strategy=params.eval_strategy,
+            eval_steps=params.eval_steps,
+            save_steps=params.save_steps,
+            gradient_accumulation_steps=params.gradient_accumulation_steps,
+        )
+        return model_trainer_config
+```
+
+- Update components, also create a new python file (model_trainer.py) inside the src/textSummarizer/components for this step
+
+```python
+## src/textSummarizer/components/model_trainer.py
+
+import os
+import torch
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import Trainer, TrainingArguments
+from transformers import DataCollatorForSeq2Seq
+from datasets import load_from_disk
+from src.textSummarizer.entity import ModelTrainerConfig
+
+
+class ModelTrainer:
+    def __init__(self, config: ModelTrainerConfig):
+        self.config = config
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    def train(self):
+        # Load dataset
+        dataset = load_from_disk(self.config.data_path)
+
+        # Load model and tokenizer
+        model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_ckpt).to(
+            self.device
+        )
+        tokenizer = AutoTokenizer.from_pretrained(self.config.model_ckpt)
+
+        # Data collator
+        data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+
+        # Training arguments
+        training_args = TrainingArguments(
+            output_dir=self.config.root_dir,
+            num_train_epochs=self.config.num_train_epochs,
+            per_device_train_batch_size=self.config.per_device_train_batch_size,
+            weight_decay=self.config.weight_decay,
+            logging_steps=self.config.logging_steps,
+            eval_strategy=self.config.eval_strategy,
+            warmup_steps=self.config.warmup_steps,
+            eval_steps=self.config.eval_steps,
+            save_steps=self.config.save_steps,
+            gradient_accumulation_steps=self.config.gradient_accumulation_steps,
+        )
+
+        # Initialize Trainer
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=dataset["test"],
+            eval_dataset=dataset["validation"],
+            data_collator=data_collator,
+            tokenizer=tokenizer,
+        )
+
+        # Start training
+        trainer.train()
+
+        # Save the model and tokenizer
+        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus-model")
+        tokenizer.save_pretrained(
+            os.path.join(self.config.root_dir), "pegasus-tokenizer"
+        )
+```
+
+- Create our third stage for our pipeline (stage3_model_trainer.py)
+
+```python
+## src/textSummarizer/pipeline/stage2_data_transformation.py
+
+from src.textSummarizer.config.configuration import ConfigurationManager
+from src.textSummarizer.components.model_trainer import ModelTrainer
+
+class ModelTrainerTrainingPipeline:
+    def __init__(self):
+        pass
+
+    def initiate_model_trainer(self):
+        config = ConfigurationManager()
+        model_trainer_config = config.get_model_trainer_config()
+        model_trainer = ModelTrainer(config=model_trainer_config)
+        model_trainer.train()
+```
+
+> Now, lets test if everyting is working fine or not
+
+- Update main.py. Copy paste the below code to main.py
+
+```python
+## main.py
+
+from src.textSummarizer.logging import logger
+from src.textSummarizer.pipeline.stage1_data_ingestion import (
+    DataIngestionTrainingPipeline,
+)
+from src.textSummarizer.pipeline.stage2_data_transformation import (
+    DataTransformationTrainingPipeline,
+)
+
+STAGE_NAME = "Data Ingestion Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    data_ingestion = DataIngestionTrainingPipeline()
+    data_ingestion.initiate_data_ingestion()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Data Transformation Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    from src.textSummarizer.pipeline.stage2_data_transformation import (
+        DataTransformationTrainingPipeline,
+    )
+
+    data_transformation = DataTransformationTrainingPipeline()
+    data_transformation.initiate_data_transformation()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Model Trainer Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    from src.textSummarizer.pipeline.stage3_model_trainer import (
+        ModelTrainerTrainingPipeline,
+    )
+
+    model_trainer = ModelTrainerTrainingPipeline()
+    model_trainer.initiate_model_trainer()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+```
+
+- Delete the artifacts folder if it already exists in your project folder
+
+```text
+.
+├── app.py
+├── artifacts   <---------------- # Delete this, if exists
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+- Run main.py
+
+```sh
+(/home/siddhu/Desktop/Text-Summarizer-With-HF/venv) siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ python main.py
+```
+
+*You may again encounter OutOfMemory Error*
