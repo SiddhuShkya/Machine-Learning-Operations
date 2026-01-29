@@ -60,6 +60,7 @@ tqdm
 PyYAML
 matplotlib
 torch
+evaluate
 boto3
 mypy-boto3-s3
 python-box==6.0.2
@@ -1175,6 +1176,13 @@ model_trainer:
   root_dir: artifacts/model_trainer
   data_path: artifacts/data_transformation/summarizer_dataset
   model_ckpt: "google/pegasus-cnn_dailymail"
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  data_path: artifacts/data_transformation/summarizer_dataset
+  model_path: artifacts/model_trainer/pegasus-model
+  tokenizer_path: artifacts/model_trainer/paegasus-tokenizer
+  metric_file_name: artifacts/model_evaluation/metrics.csv
 ```
 
 > params.yaml
@@ -1524,7 +1532,7 @@ params.yaml
 
 *If you see your output similar to the above, then everything is working fine till now*
 
-- Commit and push the changes to github
+> Commit and push the changes to github
 
 ```sh
 git add .
@@ -1685,7 +1693,6 @@ class DataTransformation:
             ds = ds.map(
                 self.convert_examples_to_features,
                 batched=True,
-                remove_columns=ds.column_names,
             )
 
             dataset_splits[split] = ds
@@ -1834,8 +1841,7 @@ class DataTransformation:
 
             ds = ds.map(
                 self.convert_examples_to_features,
-                batched=True,
-                remove_columns=ds.column_names,
+                batched=True
             )
 
             dataset_splits[split] = ds
@@ -1971,7 +1977,7 @@ Saving the dataset (1/1 shards): 100%|██████████████
 
 *If you see your output similar to the above, then everything is working fine till now*
 
-- Commit and push the changes to github
+> Commit and push the changes to github
 
 ```sh
 git add .
@@ -1979,7 +1985,7 @@ git commit -m 'Data Transformation Modularization Completed'
 git push origin main
 ```
 
-4.4 Finally, lets implement our model trainer
+4.4 Now, lets implement our model trainer module
 
 In this section we are going to proceed ahead and implement our model trainer for this project.
 
@@ -2004,6 +2010,7 @@ Similar to what we did for data ingestion and transformation, for better underst
 ├── requirements.txt
 ├── research
 │   ├── model-trainer.ipynb  <----------------------- ## Your new notebook file
+│   ├── data-transformation.ipynb  
 │   ├── data-ingestion.ipynb  
 │   ├── .ipynb_checkpoints
 │   ├── pegasus-finetuned
@@ -2158,8 +2165,8 @@ class ModelTrainer:
         trainer.train()
         
         # Save the model and tokenizer
-        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus-model")
-        tokenizer.save_pretrained(os.path.join(self.config.root_dir), "pegasus-tokenizer")
+        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus_model")
+        tokenizer.save_pretrained(os.path.join(self.config.root_dir), "pegasus_tokenizer")
 ```
 
 - You can use the below code to test if everything is working fine or not.
@@ -2347,9 +2354,9 @@ class ModelTrainer:
         trainer.train()
 
         # Save the model and tokenizer
-        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus-model")
+        model.save_pretrained(os.path.join(self.config.root_dir), "pegasus_model")
         tokenizer.save_pretrained(
-            os.path.join(self.config.root_dir), "pegasus-tokenizer"
+            os.path.join(self.config.root_dir), "pegasus_tokenizer"
         )
 ```
 
@@ -2461,3 +2468,581 @@ except Exception as e:
 ```
 
 *You may again encounter OutOfMemory Error*
+
+> Commit and push the changes to github
+
+```sh
+git add .
+git commit -m 'Data Trainer Modularization Completed'
+git push origin main
+```
+
+4.5 Finally, lets implement our model evaluation module
+
+In this section we are going to proceed ahead and implement our final module which is model trainer.
+
+> Create a new notebook file (model-evaluation.ipynb) under the research folder.
+
+```text
+```text
+.
+├── app.py
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+│   ├── model-evaluation.ipynb  <----------------------- ## Your new notebook file
+│   ├── model-trainer.ipynb  
+│   ├── data-transformation.ipynb  
+│   ├── data-ingestion.ipynb  
+│   ├── .ipynb_checkpoints
+│   ├── pegasus-finetuned
+│   ├── pegasus-model
+│   ├── pegasus-tokenizer
+│   ├── research-notebook.ipynb
+│   ├── summarizer-data
+│   ├── summarizer-data.zip
+│   ├── text-summarizer.ipynb
+│   └── text-summarizer.ipynb - Colab.pdf
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+> Copy paste the below code cell by cell to model-evaluation.ipynb notebook file
+
+- Update the present working directory to your parent folder
+
+```python
+## Cell 1
+
+import os
+
+os.chdir('../')
+%pwd
+```
+```text
+'/home/siddhu/Desktop/Text-Summarizer-With-HF'
+```
+
+- Import necessary dependencies
+
+```python
+## Cell 2
+
+import torch
+import evaluate
+from dataclasses import dataclass
+from pathlib import Path
+from src.textSummarizer.constants import *  
+from src.textSummarizer.utils.common import read_yaml, create_directories
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from datasets import load_from_disk
+import pandas as pd
+from tqdm import tqdm
+```
+
+- Create dataclass to store fields of our model evaluation config
+
+```python
+## Cell 3
+
+@dataclass(frozen=True)
+class ModelEvaluationConfig:
+    root_dir: Path
+    data_path: Path
+    model_path: Path
+    tokenizer_path: Path
+    metric_file_name: Path
+```
+- Create our configuration manager
+
+```python
+## Cell 4
+
+class ConfigurationManager:
+    
+    def __init__(self, config_filepath=CONFIG_FILE_PATH, params_filepath=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_filepath)
+        self.params = read_yaml(params_filepath)
+        create_directories([self.config.artifacts_root])
+        
+    def get_model_evaluation_config(self) -> ModelEvaluationConfig:
+        config = self.config.model_evaluation
+        create_directories([config.root_dir])
+        model_evaluation_config = ModelEvaluationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            model_path=config.model_path,
+            tokenizer_path=config.tokenizer_path,
+            metric_file_name=config.metric_file_name
+        )
+        return model_evaluation_config
+```
+
+- Create our model evaluation component
+
+```python
+## Cell 5
+
+class ModelEvaluation:
+    
+    def __init__(self, config: ModelEvaluationConfig):
+        self.config = config
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.rouge_metric = evaluate.load("rouge")
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path).to(self.device)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_path)
+        self.dataset = load_from_disk(self.config.data_path)
+
+    def generate_batch_sized_chunks(self, list_of_elements, batch_size):
+        for i in range(0, len(list_of_elements), batch_size):
+            yield list_of_elements[i : i + batch_size]
+            
+    def calculate_metric_on_test_ds(
+        self,
+        dataset,
+        metric,
+        device,
+        model,
+        tokenizer,
+        batch_size=1,
+        column_text="article",
+        column_summary="highlights",
+    ):
+        model.eval()  
+
+        article_batches = list(self.generate_batch_sized_chunks(dataset[column_text], batch_size))
+        target_batches = list(self.generate_batch_sized_chunks(dataset[column_summary], batch_size))
+
+        with torch.no_grad(): 
+            for article_batch, target_batch in zip(article_batches, target_batches):
+
+                inputs = tokenizer(
+                    article_batch,
+                    max_length=256,         
+                    truncation=True,
+                    padding="max_length",
+                    return_tensors="pt",
+                )
+
+                summaries = model.generate(
+                    input_ids=inputs["input_ids"].to(device),
+                    attention_mask=inputs["attention_mask"].to(device),
+                    max_new_tokens=128,
+                    num_beams=1,             
+                    do_sample=False,
+                    use_cache=True,
+                )
+
+                decoded_summaries = tokenizer.batch_decode(
+                    summaries, skip_special_tokens=True
+                )
+
+                metric.add_batch(
+                    predictions=decoded_summaries,
+                    references=target_batch,
+                )
+
+        return metric.compute()
+    
+    def evaluate(self):
+        dataset = load_from_disk(self.config.data_path)
+        rouge_metric = self.rouge_metric
+        rouge_names = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
+        score = self.calculate_metric_on_test_ds(
+            dataset=dataset["validation"],
+            metric=rouge_metric,
+            device=self.device,
+            model=self.model,
+            tokenizer=self.tokenizer,
+            batch_size=2,
+            column_text="dialogue",
+            column_summary="summary"
+        )
+        rouge_dict = {name: score[name] for name in rouge_names}
+        df = pd.DataFrame(rouge_dict, index=[f'pegasus'])
+        df.to_csv(self.config.metric_file_name, index=False)
+```
+
+- You can use the below code to test if everything is working fine or not.
+
+```python 
+## Cell 6
+
+config = ConfigurationManager()
+model_evaluation_config = config.get_model_evaluation_config()
+model_evaluator = ModelEvaluation(config=model_evaluation_config)
+model_evaluator.evaluate()
+```
+```text
+[2026-01-29 12:55:58,184: INFO: common: YAML file 'config/config.yaml' read successfully.]
+[2026-01-29 12:55:58,185: INFO: common: YAML file 'params.yaml' read successfully.]
+[2026-01-29 12:55:58,186: INFO: common: Directory 'artifacts' created successfully or already exists.]
+[2026-01-29 12:55:58,187: INFO: common: Directory 'artifacts/model_evaluation' created successfully or already exists.]
+The following generation flags are not valid and may be ignored: ['length_penalty']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[2026-01-29 13:01:16,277: INFO: rouge_scorer: Using default tokenizer.]
+```
+
+> Since, the above code is running fine, lets modularize it by copy pasting the code blocks to their respective files
+
+- Update entity
+
+```python
+## src/textSummarizer/entity/__init__.py
+
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass
+class DataIngestionConfig:
+    root_dir: str
+    source_url: str
+    local_data_file: str
+    unzip_dir: str
+
+@dataclass
+class DataTransformationConfig:
+    root_dir: Path
+    data_path: Path
+    tokenizer_name: Path
+
+@dataclass
+class ModelTrainerConfig:
+    # From config.yaml
+    root_dir: Path
+    data_path: Path
+    model_ckpt: Path
+    # From params.yaml
+    num_train_epochs: int
+    warmup_steps: int
+    per_device_train_batch_size: int
+    weight_decay: float
+    logging_steps: int
+    eval_strategy: str
+    eval_steps: int
+    save_steps: float
+    gradient_accumulation_steps: int
+
+@dataclass(frozen=True)
+class ModelEvaluationConfig:
+    root_dir: Path
+    data_path: Path
+    model_path: Path
+    tokenizer_path: Path
+    metric_file_name: Path
+```
+
+- Update config
+
+```python
+## src/textSummarizer/config/configuration.py
+
+from src.textSummarizer.constants import CONFIG_FILE_PATH, PARAMS_FILE_PATH
+from pathlib import Path
+from src.textSummarizer.entity import (
+    DataIngestionConfig,
+    DataTransformationConfig,
+    ModelTrainerConfig,
+    ModelEvaluationConfig,
+)
+from src.textSummarizer.utils.common import read_yaml, create_directories
+
+
+class ConfigurationManager:
+    def __init__(self, config_path=CONFIG_FILE_PATH, params_path=PARAMS_FILE_PATH):
+        self.config = read_yaml(config_path)
+        self.params = read_yaml(params_path)
+        create_directories([self.config.artifacts_root])
+
+    def get_data_ingestion_config(self) -> DataIngestionConfig:
+        config = self.config.data_ingestion
+        create_directories([config.root_dir])
+        data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            source_url=config.source_url,
+            local_data_file=config.local_data_file,
+            unzip_dir=config.unzip_dir,
+        )
+        return data_ingestion_config
+
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+        create_directories([config.root_dir])
+        data_transformation_config = DataTransformationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            tokenizer_name=config.tokenizer_name,
+        )
+        return data_transformation_config
+
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        config = self.config.model_trainer
+        params = self.params.TrainerArguments
+        create_directories([config.root_dir])
+        model_trainer_config = ModelTrainerConfig(
+            root_dir=Path(config.root_dir),
+            data_path=Path(config.data_path),
+            model_ckpt=config.model_ckpt,
+            num_train_epochs=params.num_train_epochs,
+            warmup_steps=params.warmup_steps,
+            per_device_train_batch_size=params.per_device_train_batch_size,
+            weight_decay=params.weight_decay,
+            logging_steps=params.logging_steps,
+            eval_strategy=params.eval_strategy,
+            eval_steps=params.eval_steps,
+            save_steps=params.save_steps,
+            gradient_accumulation_steps=params.gradient_accumulation_steps,
+        )
+        return model_trainer_config
+    
+    def get_model_evaluation_config(self) -> ModelEvaluationConfig:
+        config = self.config.model_evaluation
+        create_directories([config.root_dir])
+        model_evaluation_config = ModelEvaluationConfig(
+            root_dir=config.root_dir,
+            data_path=config.data_path,
+            model_path=config.model_path,
+            tokenizer_path=config.tokenizer_path,
+            metric_file_name=config.metric_file_name,
+        )
+        return model_evaluation_config
+```
+
+- Update components, also create a new python file (model_evaluation.py) inside the src/textSummarizer/components for this step
+
+```python
+## src/textSummarizer/components/model_evaluation.py
+
+import torch
+import evaluate
+import pandas as pd
+from datasets import load_from_disk
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from src.textSummarizer.entity import ModelEvaluationConfig
+
+class ModelEvaluation:
+    def __init__(self, config: ModelEvaluationConfig):
+        self.config = config
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.rouge_metric = evaluate.load("rouge")
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path).to(
+            self.device
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_path)
+        self.dataset = load_from_disk(self.config.data_path)
+
+    def generate_batch_sized_chunks(self, list_of_elements, batch_size):
+        for i in range(0, len(list_of_elements), batch_size):
+            yield list_of_elements[i : i + batch_size]
+
+    def calculate_metric_on_test_ds(
+        self,
+        dataset,
+        metric,
+        device,
+        model,
+        tokenizer,
+        batch_size=1,
+        column_text="article",
+        column_summary="highlights",
+    ):
+        model.eval()
+
+        article_batches = list(
+            self.generate_batch_sized_chunks(dataset[column_text], batch_size)
+        )
+        target_batches = list(
+            self.generate_batch_sized_chunks(dataset[column_summary], batch_size)
+        )
+
+        with torch.no_grad():
+            for article_batch, target_batch in zip(article_batches, target_batches):
+                inputs = tokenizer(
+                    article_batch,
+                    max_length=256,
+                    truncation=True,
+                    padding="max_length",
+                    return_tensors="pt",
+                )
+
+                summaries = model.generate(
+                    input_ids=inputs["input_ids"].to(device),
+                    attention_mask=inputs["attention_mask"].to(device),
+                    max_new_tokens=128,
+                    num_beams=1,
+                    do_sample=False,
+                    use_cache=True,
+                )
+
+                decoded_summaries = tokenizer.batch_decode(
+                    summaries, skip_special_tokens=True
+                )
+
+                metric.add_batch(
+                    predictions=decoded_summaries,
+                    references=target_batch,
+                )
+
+        return metric.compute()
+
+    def evaluate(self):
+        dataset = load_from_disk(self.config.data_path)
+        rouge_metric = self.rouge_metric
+        rouge_names = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
+        score = self.calculate_metric_on_test_ds(
+            dataset=dataset["validation"],
+            metric=rouge_metric,
+            device=self.device,
+            model=self.model,
+            tokenizer=self.tokenizer,
+            batch_size=2,
+            column_text="dialogue",
+            column_summary="summary",
+        )
+        rouge_dict = {name: score[name] for name in rouge_names}
+        df = pd.DataFrame(rouge_dict, index=[f"pegasus"])
+        df.to_csv(self.config.metric_file_name, index=False)
+```
+
+- Create our final stage for our pipeline (stage4_model_evaluation.py)
+
+```python
+## src/textSummarizer/pipeline/stage4_model_evaluation.py
+
+from src.textSummarizer.config.configuration import ConfigurationManager
+from src.textSummarizer.components.model_evaluation import ModelEvaluation
+from src.textSummarizer.logging import logger
+
+
+class ModelEvaluationTrainingPipeline:
+    def __init__(self):
+        pass
+
+    def initiate_model_evaluation(self):
+        try:
+            config = ConfigurationManager()
+            model_evaluation_config = config.get_model_evaluation_config()
+            model_evaluation = ModelEvaluation(config=model_evaluation_config)
+            score = model_evaluation.evaluate()
+        except Exception as e:
+            logger.exception(e)
+            raise e
+```
+
+> Now, lets test if everyting is working fine or not
+
+- Update main.py. Copy paste the below code to main.py
+
+```python
+## main.py
+
+from src.textSummarizer.logging import logger
+from src.textSummarizer.pipeline.stage1_data_ingestion import (
+    DataIngestionTrainingPipeline,
+)
+from src.textSummarizer.pipeline.stage2_data_transformation import (
+    DataTransformationTrainingPipeline,
+)
+from src.textSummarizer.pipeline.stage3_model_trainer import (
+    ModelTrainerTrainingPipeline,
+)
+from src.textSummarizer.pipeline.stage4_model_evaluation import (
+    ModelEvaluationTrainingPipeline,
+)
+
+
+STAGE_NAME = "Data Ingestion Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    data_ingestion = DataIngestionTrainingPipeline()
+    data_ingestion.initiate_data_ingestion()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Data Transformation Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    data_transformation = DataTransformationTrainingPipeline()
+    data_transformation.initiate_data_transformation()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Model Trainer Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    model_trainer = ModelTrainerTrainingPipeline()
+    model_trainer.initiate_model_trainer()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+
+STAGE_NAME = "Model Evaluation Stage"
+
+try:
+    logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
+    model_evaluation = ModelEvaluationTrainingPipeline()
+    model_evaluation.initiate_model_evaluation()
+    logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<")
+except Exception as e:
+    logger.exception(f"Error in stage {STAGE_NAME}: {e}")
+    raise e
+```
+
+- Delete the artifacts folder if it already exists in your project folder
+
+```text
+.
+├── app.py
+├── artifacts   <---------------- # Delete this, if exists
+├── config
+├── data
+├── Dockerfile
+├── .git
+├── .github
+├── .gitignore
+├── LICENSE
+├── logs
+├── main.py
+├── params.yaml
+├── README.md
+├── requirements.txt
+├── research
+├── setup.py
+├── src
+├── template.py
+└── venv
+```
+
+- Run main.py
+
+```sh
+(/home/siddhu/Desktop/Text-Summarizer-With-HF/venv) siddhu@ubuntu:~/Desktop/Text-Summarizer-With-HF$ python main.py
+```
+*Again, You can encounter OOM (OutOfMemory) Error.*
+
+> Commit and push the changes to github
+
+```sh
+git add .
+git commit -m 'Data Evaluation Modularization Completed'
+git push origin main
+```
