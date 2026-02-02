@@ -1,0 +1,23 @@
+preprocess:
+  input: data/raw/diabetes.csv
+  output: data/processed/diabetes.csv
+
+train:
+  input: data/processed/diabetes.csv
+  target: Outcome
+  model: models/model.pkl
+  random_state: 12
+  experiment: RF-Model-Training
+  run_name: rf-model-train
+  param_grid:
+    n_estimators: [100, 200]
+    max_depth: [5, 10, null]       
+    min_samples_split: [2, 5]
+    min_samples_leaf: [1, 2]
+
+evaluate:
+  data_path: data/processed/diabetes.csv
+  target: Outcome
+  experiment: RF-Model-Evaluation
+  run_name: rf-model-evaluate
+  model_path: models/model.pkl

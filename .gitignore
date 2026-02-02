@@ -1,2 +1,30 @@
+# Virtual Environment
 venv/
-codes/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files/artifacts
+*.pt
+*.pth
+*.safetensors
+*.pkl
+*.bin
+*.model
+*.onnx
+
+# Data and Artifacts (generally ignored, should be tracked by DVC if needed)
+data/
+artifacts/
+logs/
+mlruns/
+mlartifacts/
+*.db

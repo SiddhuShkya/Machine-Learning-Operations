@@ -1,0 +1,7 @@
+# Project specific ignores
+artifacts/
+logs/
+research/flan-t5-small-finetuned/
+research/t5-model/
+research/checkpoint-*/
+data/

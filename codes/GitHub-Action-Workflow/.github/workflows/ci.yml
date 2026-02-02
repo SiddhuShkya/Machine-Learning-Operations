@@ -1,0 +1,45 @@
+# Name of the workflow (shown in GitHub Actions UI)
+name: Python CI
+
+# Define when this workflow should run
+on:
+  # Run workflow on push events to the main branch
+  push:
+    branches: [ main ]
+
+  # Run workflow on pull requests targeting the main branch
+  pull_request:
+    branches: [ main ]  
+
+# Define jobs to be executed
+jobs:
+  # Job name: test
+  test:
+    # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
+
+    # Steps executed inside the job
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+        
+      # Step 2: Set up Python environment
+      - name: Set up Python Environment
+        uses: actions/setup-python@v2
+        with:
+          # Specify Python version
+          python-version: '3.8'
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: |
+          # Upgrade pip to the latest version
+          python -m pip install --upgrade pip
+          # Install dependencies from requirements.txt
+          pip install -r requirements.txt
+                
+      # Step 4: Run unit tests using pytest
+      - name: Run Tests
+        run: |
+          pytest
