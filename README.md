@@ -15,16 +15,13 @@ A comprehensive repository dedicated to mastering the end-to-end lifecycle of ma
 ```bash
 .
 ├── 💻 codes/           # Practical implementations & experiments
-│   ├── Flask/          # Web serving for ML models
-│   ├── Airflow/        # Workflow orchestration
-│   ├── DVC/            # Data & Pipeline versioning
-│   └── MLflow/         # Experiment tracking & model registry
 ├── 📄 docs/            # Detailed documentation & guides
 │   ├── Airflow/        # Apache Airflow setup & ETL projects
 │   ├── CI-CD/          # Automated testing & DockerHub workflows
 │   ├── DVC/            # Data Version Control & DagsHub integration
 │   ├── Docker/         # Containerization & Compose guides
 │   └── MLflow/         # ML/DL tracking with MLflow
+│   └── Projects/       # Porject Documentations
 ├── 📓 notes/           # Conceptual PDF guides and cheat sheets
 └── 📊 data/            # Sample datasets for experimentation
 ```
