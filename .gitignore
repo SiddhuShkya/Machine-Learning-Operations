@@ -22,7 +22,6 @@ Thumbs.db
 *.onnx
 
 # Data and Artifacts (generally ignored, should be tracked by DVC if needed)
-data/
 artifacts/
 logs/
 mlruns/
